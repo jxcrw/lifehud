@@ -26,17 +26,17 @@ def load_data() -> dict:
         with open(file, 'r', encoding='utf-8') as f:
             name = file.stem
             data = [line.strip() for line in f]
-            data = [line.split('\t')[0] for line in data]
-            data = [datetime.datetime.strptime(line, '%Y/%m/%d') for line in data]
-            data = [thing.date() for thing in data]
-            data = set(data)
+            data = [line.split('\t') for line in data]
+            data = {datetime.datetime.strptime(line[0], '%Y/%m/%d').date(): float(line[1]) for line in data}
             datasets[name] = data
 
     return datasets
 
 
-def build_graph(data: set) -> str:
+def build_graph(data: set, standard: int) -> str:
     """Build a contribution graph based on the given data."""
+    std_lo, std_hi = standard[0], standard[1]
+
     # Set up dates
     now = datetime.datetime.now()
     start = datetime.date(now.year, 1, 1)
@@ -58,7 +58,11 @@ def build_graph(data: set) -> str:
         for daynum in range(7):
             if daynum in week:
                 date = week[daynum]
-                color = Fore.GREEN if date in data else Fore.LIGHTBLACK_EX
+                if date in data:
+                    val = data[date]
+                    color = get_color(val, standard)
+                else:
+                    color = Fore.LIGHTBLACK_EX
                 daychar = color + '⯀'  # Alt: ●
             else:
                 daychar = ' '
@@ -76,15 +80,32 @@ def build_graph(data: set) -> str:
     return graph
 
 
+def get_color(val: float, standard: tuple):
+    """Color a value according to the given standard."""
+    std_lo, std_hi = standard[0], standard[1]
+    color = Fore.WHITE
+    if val == 0:
+        color = Fore.LIGHTBLACK_EX
+    elif val <= std_lo:
+        color = Fore.RED
+    elif val >= std_hi:
+        color = Fore.GREEN
+    else:
+        color = Fore.YELLOW
+    return color
+
+
+
 if __name__ == '__main__':
-    cags = ['mind', 'body', 'pool']
+    cags = [('mind', (7, 8)), ('body', (1, 1)), ('pool', (1, 2))]
     datasets = load_data()
 
     print()
     for cag in cags:
-        data = datasets[cag]
-        graph = build_graph(data)
+        name, std = cag[0], cag[1]
+        data = datasets[name]
+        graph = build_graph(data, std)
 
-        print(Fore.WHITE + cag)
+        print(Fore.WHITE + name)
         print(graph)
         print()
