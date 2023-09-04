@@ -27,7 +27,7 @@ def load_data() -> dict:
             name = file.stem
             data = [line.strip() for line in f]
             data = [line.split('\t') for line in data]
-            data = {datetime.datetime.strptime(line[0], '%Y/%m/%d').date(): float(line[1]) for line in data}
+            data = {datetime.datetime.strptime(line[0], '%Y-%m-%d').date(): float(line[1]) for line in data}
             datasets[name] = data
 
     return datasets
@@ -60,7 +60,8 @@ def build_graph(data: set, standard: int) -> str:
                 date = week[daynum]
                 if date in data:
                     val = data[date]
-                    color = get_color(val, standard)
+                    result = get_result(val, standard)
+                    color = result2color(result)
                 else:
                     color = Fore.LIGHTBLACK_EX
                 daychar = color + '⯀'  # Alt: ●
@@ -80,23 +81,35 @@ def build_graph(data: set, standard: int) -> str:
     return graph
 
 
-def get_color(val: float, standard: tuple):
+def get_result(val: float, standard: tuple):
     """Color a value according to the given standard."""
     std_lo, std_hi = standard[0], standard[1]
-    color = Fore.WHITE
+    result = (0, 'zero')
     if val == 0:
-        color = Fore.LIGHTBLACK_EX
+        result = (0, 'zero')
     elif val <= std_lo:
-        color = Fore.RED
+        result = (0.25, 'bad')
     elif val >= std_hi:
-        color = Fore.GREEN
+        result = (1, 'good')
     else:
-        color = Fore.YELLOW
+        result = (0.5, 'ok')
+    return result
+
+
+def result2color(result: float):
+    colors = {
+        'zero': Fore.LIGHTBLACK_EX,
+        'bad': Fore.RED,
+        'ok': Fore.YELLOW,
+        'good': Fore.GREEN
+    }
+    color = colors[result[1]]
     return color
 
 
+
 def process_work():
-    with open('work.txt', 'r', encoding='utf-8') as f:
+    with open(DIR_ROOT / 'work.txt', 'r', encoding='utf-8') as f:
         data = [line.strip().split('\t')[0] for line in f]
     dataset = defaultdict(int)
     for line in data:
@@ -105,20 +118,53 @@ def process_work():
     items = [[str(key), str(val)] for key, val in dataset.items()]
     items = ['\t'.join(item) for item in items]
     items.sort()
-    with open('data/work.txt', 'w+', newline='\n', encoding='utf-8') as f:
+    with open(DIR_DATA / 'work.txt', 'w+', newline='\n', encoding='utf-8') as f:
         f.write('\n'.join(items))
 
 
+def calc_life(datasets, cags):
+    # Set up dates
+    now = datetime.datetime.now()
+    start = datetime.date(now.year, 1, 1)
+    end_year = datetime.date(now.year, 12, 31)
+    delta = datetime.timedelta(days=1)
+
+    # Build dict(date → total_score)
+    curr, scores = start, defaultdict(int)
+    while curr <= end_year:
+        total = 0
+        for dataset, cag in zip(datasets, cags):
+            name, std = cag[0], cag[1]
+            if name == 'life': continue
+            data = datasets[name]
+            val = data[curr] if curr in data else 0
+            score = get_result(val, std)[0]
+            total += score
+        scores[curr] = total
+        curr += delta
+
+    # Write to file
+    items = [[str(key), str(val)] for key, val in scores.items()]
+    items = ['\t'.join(item) for item in items]
+    items.sort()
+    with open(DIR_DATA / 'life.txt', 'w+', newline='\n', encoding='utf-8') as f:
+        f.write('\n'.join(items))
+
 
 if __name__ == '__main__':
-    # process_work()
-    cags = [('mind', (7, 8)),
-            ('body', (1, 1)),
-            ('pool', (1, 2)),
-            ('lang', (10, 40)),
-            ('work', (1, 3))]
+    process_work()
+    cags = [
+        ('mind', (7, 8)),
+        ('body', (1, 1)),
+        ('pool', (1, 2)),
+        ('lang', (10, 40)),
+        ('work', (1, 3)),
+        ('life', (2, 5)),
+    ]
     datasets = load_data()
+    calc_life(datasets, cags)
 
+    # Individual categories
     print()
     for cag in cags:
         name, std = cag[0], cag[1]
