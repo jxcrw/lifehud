@@ -147,7 +147,7 @@ def calc_life(datasets, cags):
     items = [[str(key), str(val)] for key, val in scores.items()]
     items = ['\t'.join(item) for item in items]
     items.sort()
-    with open(DIR_DATA / 'life.txt', 'w+', newline='\n', encoding='utf-8') as f:
+    with open(DIR_DATA / 'LIFE.txt', 'w+', newline='\n', encoding='utf-8') as f:
         f.write('\n'.join(items))
 
 
@@ -159,7 +159,7 @@ if __name__ == '__main__':
         ('pool', (1, 2)),
         ('lang', (10, 40)),
         ('work', (1, 3)),
-        ('life', (2, 5)),
+        ('LIFE', (2, 4.25)),
     ]
     datasets = load_data()
     calc_life(datasets, cags)
