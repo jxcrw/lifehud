@@ -2,17 +2,26 @@
 """LifeHUD"""
 
 from collections import defaultdict
-import datetime
+from datetime import timedelta, date, datetime
 
 from colorama import Fore
 
-# Set up
-now = datetime.datetime.now()
-start = datetime.date(now.year, 1, 1)
+# Load up data
+with open('data.txt', 'r', encoding='utf-8') as f:
+    data = [line.strip() for line in f]
+    data = [line.split('\t')[0] for line in data]
+    data = [datetime.strptime(line, '%Y/%m/%d') for line in data]
+    data = [thing.date() for thing in data]
+    data = set(data)
+
+
+# Set up dates
+now = datetime.now()
+start = date(now.year, 1, 1)
 
 end_curr = now.date()
-end_year = datetime.date(now.year, 12, 31)
-delta = datetime.timedelta(days=1)
+end_year = date(now.year, 12, 31)
+delta = timedelta(days=1)
 
 
 # Build dict(weeknum → dict(daynum → date))
@@ -31,7 +40,7 @@ for weeknum, week in weeks.items():
     for daynum in range(7):
         if daynum in week:
             date = week[daynum]
-            color = Fore.GREEN if date <= end_curr else Fore.BLACK
+            color = Fore.GREEN if date in data else Fore.LIGHTBLACK_EX
             daychar = color + '⯀' # Alt: ●
         else:
             daychar = ' '
