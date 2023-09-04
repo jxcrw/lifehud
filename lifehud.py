@@ -95,9 +95,28 @@ def get_color(val: float, standard: tuple):
     return color
 
 
+def process_work():
+    with open('work.txt', 'r', encoding='utf-8') as f:
+        data = [line.strip().split('\t')[0] for line in f]
+    dataset = defaultdict(int)
+    for line in data:
+        dataset[line] += 1
+
+    items = [[str(key), str(val)] for key, val in dataset.items()]
+    items = ['\t'.join(item) for item in items]
+    items.sort()
+    with open('data/work.txt', 'w+', newline='\n', encoding='utf-8') as f:
+        f.write('\n'.join(items))
+
+
 
 if __name__ == '__main__':
-    cags = [('mind', (7, 8)), ('body', (1, 1)), ('pool', (1, 2))]
+    # process_work()
+    cags = [('mind', (7, 8)),
+            ('body', (1, 1)),
+            ('pool', (1, 2)),
+            ('lang', (10, 40)),
+            ('work', (1, 3))]
     datasets = load_data()
 
     print()
