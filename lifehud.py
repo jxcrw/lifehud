@@ -10,7 +10,7 @@ from colorama import Fore
 
 
 DIR_ROOT = Path(r'C:\~\dev\lifehud')
-DIR_DATA = DIR_ROOT / 'data'
+DIR_DATA = DIR_ROOT / '_data'
 
 
 def load_data() -> dict:
