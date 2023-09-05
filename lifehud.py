@@ -6,7 +6,7 @@ import datetime
 import os
 from pathlib import Path
 
-from colorama import Back, Fore
+from colorama import Back, Fore, Style
 
 
 DIR_ROOT = Path(r'C:\~\dev\lifehud')
@@ -33,7 +33,7 @@ def load_data() -> dict:
     return datasets
 
 
-def build_graph(data: set, standard: int, year: int) -> str:
+def build_graph(name, data: set, standard: int, year: int) -> str:
     """Build a contribution graph based on the given data."""
     # Set up dates
     delta = datetime.timedelta(days=1)
@@ -62,8 +62,15 @@ def build_graph(data: set, standard: int, year: int) -> str:
                     fore = result2fore(result)
                 else:
                     fore = Fore.LIGHTBLACK_EX
-                back = Back.BLACK if date == today else Back.RESET
-                daychar = fore + back + '⯀ '  # Alt: ●
+                    result = (0, 'zero')
+                daychar = fore + '⯀'  # Alt: ●
+                if date == today and result[1] != 'zero':
+                    daychar = "\033[4m" + daychar + "\033[0m"
+                elif date == today and result[1] == 'zero':
+                    daychar = Back.BLACK + daychar
+                else:
+                    daychar = Back.RESET + daychar
+                # daychar = Style.RESET
             else:
                 daychar = ' '
             daychars.append(daychar)
@@ -73,7 +80,7 @@ def build_graph(data: set, standard: int, year: int) -> str:
     daysof = []
     for daynum in range(7):
         days = [weekchar[daynum] for weekchar in weekchars]
-        dayof = ''.join(days)
+        dayof = ' '.join(days)
         daysof.append(dayof)
 
     graph = '\n'.join(daysof)
@@ -124,7 +131,7 @@ def process_work():
 def calc_life(datasets, cags):
     # Set up dates
     now = datetime.datetime.now()
-    start = datetime.date(now.year, 1, 1)
+    start = datetime.date(2012, 1, 1)
     end_year = datetime.date(now.year, 12, 31)
     delta = datetime.timedelta(days=1)
 
@@ -156,14 +163,14 @@ def go_by_year(name: str, dataset, standard):
     print()
     for year in reversed(years):
         label = f'{name}-{year}'
-        graph = build_graph(dataset, standard, year)
+        graph = build_graph(name, dataset, standard, year)
         print(Fore.WHITE + label)
         print(graph)
         print()
 
 
 if __name__ == '__main__':
-    process_work()
+    # process_work()
     cags = [
         ('mind', (7, 8)),
         ('body', (1, 1)),
@@ -180,7 +187,7 @@ if __name__ == '__main__':
     for cag in cags:
         name, std = cag[0], cag[1]
         data = datasets[name]
-        graph = build_graph(data, std, 2023)
+        graph = build_graph(name, data, std, 2023)
 
         print(Fore.WHITE + name)
         print(graph)
