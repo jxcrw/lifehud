@@ -6,7 +6,7 @@ import datetime
 import os
 from pathlib import Path
 
-from colorama import Fore
+from colorama import Back, Fore
 
 
 DIR_ROOT = Path(r'C:\~\dev\lifehud')
@@ -36,9 +36,10 @@ def load_data() -> dict:
 def build_graph(data: set, standard: int, year: int) -> str:
     """Build a contribution graph based on the given data."""
     # Set up dates
+    delta = datetime.timedelta(days=1)
     start = datetime.date(year, 1, 1)
     end_year = datetime.date(year, 12, 31)
-    delta = datetime.timedelta(days=1)
+    today = datetime.date.today() - delta
 
     # Build dict(weeknum → dict(daynum → date))
     curr, weeks = start, defaultdict(dict)
@@ -58,10 +59,11 @@ def build_graph(data: set, standard: int, year: int) -> str:
                 if date in data:
                     val = data[date]
                     result = get_result(val, standard)
-                    color = result2color(result)
+                    fore = result2fore(result)
                 else:
-                    color = Fore.LIGHTBLACK_EX
-                daychar = color + '⯀'  # Alt: ●
+                    fore = Fore.LIGHTBLACK_EX
+                back = Back.BLACK if date == today else Back.RESET
+                daychar = fore + back + '⯀ '  # Alt: ●
             else:
                 daychar = ' '
             daychars.append(daychar)
@@ -71,7 +73,7 @@ def build_graph(data: set, standard: int, year: int) -> str:
     daysof = []
     for daynum in range(7):
         days = [weekchar[daynum] for weekchar in weekchars]
-        dayof = ' '.join(days)
+        dayof = ''.join(days)
         daysof.append(dayof)
 
     graph = '\n'.join(daysof)
@@ -93,15 +95,15 @@ def get_result(val: float, standard: tuple):
     return result
 
 
-def result2color(result: float):
-    colors = {
+def result2fore(result: float):
+    fores = {
         'zero': Fore.LIGHTBLACK_EX,
         'bad': Fore.RED,
         'ok': Fore.YELLOW,
         'good': Fore.GREEN
     }
-    color = colors[result[1]]
-    return color
+    fore = fores[result[1]]
+    return fore
 
 
 
@@ -173,19 +175,19 @@ if __name__ == '__main__':
     datasets = load_data()
     calc_life(datasets, cags)
 
-    # # Individual categories
-    # print()
-    # for cag in cags:
-    #     name, std = cag[0], cag[1]
-    #     data = datasets[name]
-    #     graph = build_graph(data, std)
-    #
-    #     print(Fore.WHITE + name)
-    #     print(graph)
-    #     print()
+    # Individual categories
+    print()
+    for cag in cags:
+        name, std = cag[0], cag[1]
+        data = datasets[name]
+        graph = build_graph(data, std, 2023)
 
-    # By years
-    name = 'work'
-    dataset = datasets[name]
-    standard = (1, 3)
-    go_by_year(name, dataset, standard)
+        print(Fore.WHITE + name)
+        print(graph)
+        print()
+
+    # # By years
+    # name = 'work'
+    # dataset = datasets[name]
+    # standard = (1, 3)
+    # go_by_year(name, dataset, standard)
