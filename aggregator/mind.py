@@ -40,5 +40,5 @@ for entry in raw:
 # Write data
 path = DIR_DATA / 'mind.txt'
 with open(path, 'w+', newline='\n', encoding='utf-8') as f:
-    f.writelines('\n'.join(['\t'.join(entry) for entry in data]))
+    f.write('\n'.join(['\t'.join(entry) for entry in data]))
 
