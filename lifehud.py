@@ -33,14 +33,11 @@ def load_data() -> dict:
     return datasets
 
 
-def build_graph(data: set, standard: int) -> str:
+def build_graph(data: set, standard: int, year: int) -> str:
     """Build a contribution graph based on the given data."""
-    std_lo, std_hi = standard[0], standard[1]
-
     # Set up dates
-    now = datetime.datetime.now()
-    start = datetime.date(now.year, 1, 1)
-    end_year = datetime.date(now.year, 12, 31)
+    start = datetime.date(year, 1, 1)
+    end_year = datetime.date(year, 12, 31)
     delta = datetime.timedelta(days=1)
 
     # Build dict(weeknum → dict(daynum → date))
@@ -151,6 +148,18 @@ def calc_life(datasets, cags):
         f.write('\n'.join(items))
 
 
+def go_by_year(name: str, dataset, standard):
+    years = list(set([date.year for date in dataset]))
+    years.sort()
+    print()
+    for year in reversed(years):
+        label = f'{name}-{year}'
+        graph = build_graph(dataset, standard, year)
+        print(Fore.WHITE + label)
+        print(graph)
+        print()
+
+
 if __name__ == '__main__':
     process_work()
     cags = [
@@ -164,13 +173,19 @@ if __name__ == '__main__':
     datasets = load_data()
     calc_life(datasets, cags)
 
-    # Individual categories
-    print()
-    for cag in cags:
-        name, std = cag[0], cag[1]
-        data = datasets[name]
-        graph = build_graph(data, std)
+    # # Individual categories
+    # print()
+    # for cag in cags:
+    #     name, std = cag[0], cag[1]
+    #     data = datasets[name]
+    #     graph = build_graph(data, std)
+    #
+    #     print(Fore.WHITE + name)
+    #     print(graph)
+    #     print()
 
-        print(Fore.WHITE + name)
-        print(graph)
-        print()
+    # By years
+    name = 'work'
+    dataset = datasets[name]
+    standard = (1, 3)
+    go_by_year(name, dataset, standard)
