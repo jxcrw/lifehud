@@ -8,10 +8,10 @@ from pathlib import Path
 
 from colorama import Back, Fore, Style
 
-
+USER = os.getenv('USERNAME')
 DIR_ROOT = Path(r'C:\~\dev\lifehud')
-DIR_SYNC = Path(r'C:\Users\jak\Dropbox\lifehud')
 DIR_DATA = DIR_ROOT / '_data'
+DIR_SYNC = Path(rf'C:\Users\{USER}\Dropbox\lifehud')
 
 
 def load_data() -> dict:
