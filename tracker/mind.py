@@ -34,13 +34,13 @@ if is_new:
     hours = end = 'wip'
     sesh = [date, hours, start, end]
     data.appendleft(sesh)
-    message = 'sleep_9ece6a'
+    message = 'mind_9ece6a'
 else:
     start = datetime.strptime(latest[0] + latest[2], '%Y-%m-%d%H:%M')
     duration = (now - start).seconds / 3600
     latest[1] = f'{duration:0.2f}'
     latest[3] = now.strftime('%H:%M')
-    message = f'sleep ({latest[1]}h)_f7768e'
+    message = f'mind ({latest[1]}h)_f7768e'
 
 
 # Write data
