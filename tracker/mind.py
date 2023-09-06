@@ -25,22 +25,22 @@ with open(FILE, 'r', encoding='utf-8') as f:
 # Act
 now = datetime.now()
 latest = data[0]
-is_new = latest[2] != 'wip'
+is_new = latest[1] != 'wip'
 
 if is_new:
     start = now + timedelta(minutes=30)
     date = now.strftime('%Y-%m-%d')
     start = start.strftime('%H:%M')
     hours = end = 'wip'
-    sesh = [date, start, end, hours]
+    sesh = [date, hours, start, end]
     data.appendleft(sesh)
     message = 'sleep_9ece6a'
 else:
-    start = datetime.strptime(latest[0] + latest[1], '%Y-%m-%d%H:%M')
+    start = datetime.strptime(latest[0] + latest[2], '%Y-%m-%d%H:%M')
     duration = (now - start).seconds / 3600
-    latest[3] = f'{duration:0.2f}'
-    latest[2] = now.strftime('%H:%M')
-    message = f'sleep ({latest[3]}h)_f7768e'
+    latest[1] = f'{duration:0.2f}'
+    latest[3] = now.strftime('%H:%M')
+    message = f'sleep ({latest[1]}h)_f7768e'
 
 
 # Write data

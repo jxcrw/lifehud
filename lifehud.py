@@ -12,6 +12,7 @@ USER = os.getenv('USERNAME')
 DIR_ROOT = Path(r'C:\~\dev\lifehud')
 DIR_DATA = DIR_ROOT / '_data'
 DIR_SYNC = Path(rf'C:\Users\{USER}\Dropbox\lifehud')
+DIR_DATA = DIR_SYNC
 
 
 def load_data() -> dict:
