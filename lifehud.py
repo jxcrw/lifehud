@@ -19,7 +19,7 @@ def load_data() -> dict:
     """Load up the data to be graphed."""
     datafiles = []
     for root, dirs, files in os.walk(DIR_DATA):
-        files = [os.path.join(root, file) for file in files]
+        files = [os.path.join(root, file) for file in files if 'anki2' not in file]
         files = [Path(file) for file in files]
         datafiles.extend(files)
 
