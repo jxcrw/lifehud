@@ -3,6 +3,12 @@
 
 from collections import deque
 from datetime import datetime, timedelta
+import sys
+
+import pyperclip
+
+PATH = r'C:\~\dev\lifehud'
+sys.path.append(PATH)
 
 from lifehud import DIR_SYNC
 
@@ -28,15 +34,17 @@ if is_new:
     hours = end = 'wip'
     sesh = [date, hours, start, end]
     data.appendleft(sesh)
-    print('sleep well')
+    message = '💤 sleep well 💤'
 else:
     start = datetime.strptime(latest[0] + latest[2], '%Y-%m-%d%H:%M')
     duration = (now - start).seconds / 3600
     latest[1] = f'{duration:0.2f}'
     latest[3] = now.strftime('%H:%M')
-    print('wake up')
+    message = '🌅 wake up 🌅'
 
 
 # Write data
 with open(FILE, 'w+', newline='\n', encoding='utf-8') as f:
     f.write('\n'.join(['\t'.join(entry) for entry in data]))
+pyperclip.copy(message)
+print(message)
