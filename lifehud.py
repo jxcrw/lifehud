@@ -10,6 +10,7 @@ from colorama import Back, Fore, Style
 
 
 DIR_ROOT = Path(r'C:\~\dev\lifehud')
+DIR_SYNC = Path(r'C:\Users\jak\Dropbox\lifehud')
 DIR_DATA = DIR_ROOT / '_data'
 
 
@@ -172,7 +173,7 @@ def go_by_year(name: str, dataset, standard):
 if __name__ == '__main__':
     # process_work()
     cags = [
-        ('mind', (7, 8)),
+        ('mind', (7, 7.9)),
         ('body', (1, 1)),
         ('pool', (1, 2)),
         ('lang', (10, 40)),
