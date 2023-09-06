@@ -134,7 +134,7 @@ def calc_life(datasets, cags):
     # Set up dates
     now = datetime.datetime.now()
     start = datetime.date(2012, 1, 1)
-    end_year = datetime.date(now.year, 12, 31)
+    end_year = now.date()
     delta = datetime.timedelta(days=1)
 
     # Build dict(date → total_score)
@@ -154,7 +154,7 @@ def calc_life(datasets, cags):
     # Write to file
     items = [[str(key), str(val)] for key, val in scores.items()]
     items = ['\t'.join(item) for item in items]
-    items.sort()
+    items.sort(reverse=True)
     with open(DIR_DATA / 'LIFE.txt', 'w+', newline='\n', encoding='utf-8') as f:
         f.write('\n'.join(items))
 
