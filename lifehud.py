@@ -141,8 +141,8 @@ def calc_life(datasets, cags):
     curr, scores = start, defaultdict(int)
     while curr <= end_year:
         total = 0
-        for dataset, cag in zip(datasets, cags):
-            name, std = cag[0], cag[1]
+        for dataset, cag in zip(datasets, cags.keys()):
+            name, std = cag, cags[cag]
             if name == 'life': continue
             data = datasets[name]
             val = data[curr] if curr in data else 0
@@ -194,30 +194,29 @@ def get_today():
 
 if __name__ == '__main__':
     # process_work()
-    cags = [
-        ('mind', (7, 7.9)),
-        ('body', (1, 1)),
-        ('pool', (1, 2)),
-        ('lang', (10, 40)),
-        ('work', (1, 3)),
-        ('LIFE', (2, 4.25)),
-    ]
+    cags = {
+        'mind': (7, 7.9),
+        'body': (1, 1),
+        'pool': (1, 2),
+        'lang': (10, 40),
+        'work': (1, 3),
+        'LIFE': (2, 4.25),
+    }
     datasets = load_data()
     calc_life(datasets, cags)
 
     # Individual categories
     print()
-    for cag in cags:
-        name, std = cag[0], cag[1]
-        data = datasets[name]
-        graph = build_graph(name, data, std, 2023)
+    for cag, std in cags.items():
+        data = datasets[cag]
+        graph = build_graph(cag, data, std, 2023)
 
-        print(Fore.WHITE + name)
+        print(Fore.WHITE + cag)
         print(graph)
         print()
 
     # # By years
     # name = 'work'
     # dataset = datasets[name]
-    # standard = (1, 3)
+    # standard = cags[name]
     # go_by_year(name, dataset, standard)
