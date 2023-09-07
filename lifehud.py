@@ -226,13 +226,14 @@ if __name__ == '__main__':
 
     # Individual categories
     print()
+    graphs = []
     for cag, std in cags.items():
         data = datasets[cag]
         graph = build_graph(cag, data, std, 2023)
+        string = f'{Fore.WHITE + cag}\n{graph}'
+        graphs.append(string)
+    print('\n'.join(graphs))
 
-        print(Fore.WHITE + cag)
-        print(graph)
-        print()
 
     # # By years
     # name = 'work'
