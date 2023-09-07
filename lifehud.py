@@ -5,6 +5,7 @@ from collections import defaultdict
 import datetime
 import os
 from pathlib import Path
+import sys
 
 from colorama import Back, Fore, Style
 
@@ -230,6 +231,9 @@ def get_current_week_dates():
 
 
 if __name__ == '__main__':
+    # ┌─────────────────────────────────────────────────────────────────────────────
+    # │ Setup
+    # └─────────────────────────────────────────────────────────────────────────────
     # process_work()
     cags = {
         'mind': (7, 7.9),
@@ -243,34 +247,37 @@ if __name__ == '__main__':
     calc_life(datasets, cags)
 
 
-    # # Individual categories
-    # print()
-    # graphs = []
-    # for cag, std in cags.items():
-    #     data = datasets[cag]
-    #     graph = build_graph(cag, data, std, 2023)
-    #     string = f'{Fore.WHITE + cag}\n{graph}'
-    #     graphs.append(string)
-    # print('\n\n'.join(graphs))
+    # ┌─────────────────────────────────────────────────────────────────────────────
+    # │ UI
+    # └─────────────────────────────────────────────────────────────────────────────
+    mode = sys.argv[1] if len(sys.argv) > 1 else 'all'
 
-
-    # # By years
-    # name = 'work'
-    # dataset = datasets[name]
-    # standard = cags[name]
-    # go_by_year(name, dataset, standard)
-
-
-    # Current week
-    dates = get_current_week_dates()
-    strings = []
-    for cag, std in cags.items():
-        project = [Fore.WHITE + cag]
-        data = datasets[cag]
-        for date in dates:
-            dot = get_dot(date, data, std)
-            project.append(dot)
-        strings.append(project)
-
-    print()
-    print('\n'.join([' '.join(entry) for entry in strings]))
+    match mode:
+        case 'all':
+            # Individual categories
+            print()
+            graphs = []
+            for cag, std in cags.items():
+                data = datasets[cag]
+                graph = build_graph(cag, data, std, 2023)
+                string = f'{Fore.WHITE + cag}\n{graph}'
+                graphs.append(string)
+            print('\n\n'.join(graphs))
+        case 'week':
+            # Current week
+            print()
+            dates = get_current_week_dates()
+            strings = []
+            for cag, std in cags.items():
+                project = [Fore.WHITE + cag]
+                data = datasets[cag]
+                for date in dates:
+                    dot = get_dot(date, data, std)
+                    project.append(dot)
+                strings.append(project)
+            print('\n'.join([' '.join(entry) for entry in strings]))
+        case _:
+            name = mode
+            dataset = datasets[name]
+            standard = cags[name]
+            go_by_year(name, dataset, standard)
