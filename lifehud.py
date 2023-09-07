@@ -89,6 +89,25 @@ def build_graph(name, data: set, standard: int, year: int) -> str:
     return graph
 
 
+def get_dot(date, data, standard) -> str:
+    today = get_today()
+    if date in data:
+        val = data[date]
+        result = get_result(val, standard)
+        fore = result2fore(result)
+    else:
+        fore = Fore.LIGHTBLACK_EX
+        result = (0, 'zero')
+    dot = fore + '⯀'  # Alt: ●
+    if date == today and result[1] != 'zero':
+        dot = "\033[4m" + dot + "\033[0m"
+    elif date == today and result[1] == 'zero':
+        dot = Back.BLACK + dot
+    else:
+        dot = Back.RESET + dot
+    return dot
+
+
 def get_result(val: float, standard: tuple):
     """Color a value according to the given standard."""
     std_lo, std_hi = standard[0], standard[1]
