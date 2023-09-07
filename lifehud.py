@@ -241,6 +241,7 @@ if __name__ == '__main__':
         'pool': (1, 2),
         'lang': (10, 40),
         'work': (1, 3),
+        'work2': (2, 4),
         'LIFE': (2, 4.25),
     }
     datasets = load_data()
@@ -257,6 +258,7 @@ if __name__ == '__main__':
             # Individual categories
             print()
             graphs = []
+            cags.pop('work2')
             for cag, std in cags.items():
                 data = datasets[cag]
                 graph = build_graph(cag, data, std, 2023)
