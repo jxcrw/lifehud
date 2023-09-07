@@ -91,6 +91,7 @@ def build_graph(name, data: set, standard: int, year: int) -> str:
 
 def get_dot(date, data, standard) -> str:
     today = get_today()
+    date = date.date()
     if date in data:
         val = data[date]
         result = get_result(val, standard)
@@ -210,6 +211,23 @@ def get_today():
     return today
 
 
+def get_current_week_dates():
+    # Get the current date
+    current_date = datetime.datetime.now()
+
+    # Find the starting date (Monday) of the current week
+    start_of_week = current_date - datetime.timedelta(days=current_date.weekday())
+
+    # Create a list to store the datetime objects for each day in the week
+    week_dates = []
+
+    # Loop through the days of the week, adding them to the list
+    for i in range(7):
+        week_dates.append(start_of_week + datetime.timedelta(days=i))
+
+    return week_dates
+
+
 
 if __name__ == '__main__':
     # process_work()
@@ -224,15 +242,16 @@ if __name__ == '__main__':
     datasets = load_data()
     calc_life(datasets, cags)
 
-    # Individual categories
-    print()
-    graphs = []
-    for cag, std in cags.items():
-        data = datasets[cag]
-        graph = build_graph(cag, data, std, 2023)
-        string = f'{Fore.WHITE + cag}\n{graph}'
-        graphs.append(string)
-    print('\n'.join(graphs))
+
+    # # Individual categories
+    # print()
+    # graphs = []
+    # for cag, std in cags.items():
+    #     data = datasets[cag]
+    #     graph = build_graph(cag, data, std, 2023)
+    #     string = f'{Fore.WHITE + cag}\n{graph}'
+    #     graphs.append(string)
+    # print('\n\n'.join(graphs))
 
 
     # # By years
@@ -240,3 +259,18 @@ if __name__ == '__main__':
     # dataset = datasets[name]
     # standard = cags[name]
     # go_by_year(name, dataset, standard)
+
+
+    # Current week
+    dates = get_current_week_dates()
+    strings = []
+    for cag, std in cags.items():
+        project = [Fore.WHITE + cag]
+        data = datasets[cag]
+        for date in dates:
+            dot = get_dot(date, data, std)
+            project.append(dot)
+        strings.append(project)
+
+    print()
+    print('\n'.join([' '.join(entry) for entry in strings]))
