@@ -41,7 +41,7 @@ def build_graph(name, data: set, standard: int, year: int) -> str:
     delta = datetime.timedelta(days=1)
     start = datetime.date(year, 1, 1)
     end_year = datetime.date(year, 12, 31)
-    today = datetime.date.today() - delta
+    today = get_today()
 
     # Build dict(weeknum → dict(daynum → date))
     curr, weeks = start, defaultdict(dict)
@@ -169,6 +169,27 @@ def go_by_year(name: str, dataset, standard):
         print(Fore.WHITE + label)
         print(graph)
         print()
+
+
+def get_today():
+    # Get wake up time
+    with open(DIR_SYNC / 'mind.txt', 'r', encoding='utf-8') as f:
+        data = [line.strip().split('\t') for line in f]
+        latest = data[0]
+        wake = datetime.datetime.strptime(latest[0] + latest[3], '%Y-%m-%d%H:%M')
+
+    # Compare to now
+    now = datetime.datetime.now()
+    now_date = now.date()
+    wake_date = wake.date()
+
+    if now_date == wake_date:
+        today = now_date
+    else:
+        today = now_date - datetime.timedelta(days=1)
+
+    return today
+
 
 
 if __name__ == '__main__':
