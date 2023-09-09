@@ -3,14 +3,13 @@
 
 import csv
 from datetime import datetime
-from pathlib import Path
 from zipfile import ZipFile
 
-from _cfg.config import DIR_DATA
+from _cfg.config import DIR_DATA, DIR_SYNC
 
 
 # Setup
-FILE_IN = Path(r'C:\Users\jak\Dropbox\Apps\Sleep Cloud Backup\Sleep as Android Data.zip')
+FILE_IN = DIR_SYNC / 'Apps/Sleep Cloud Backup/Sleep as Android Data.zip'
 DIR_OUT = FILE_IN.parent
 
 
