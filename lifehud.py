@@ -5,8 +5,10 @@ from collections import defaultdict, deque
 import datetime
 import os
 from pathlib import Path
+import subprocess
 import sys
 
+from ahk import AHK
 from colorama import Back, Fore, Style
 import pyperclip
 
@@ -227,7 +229,7 @@ def get_current_week_dates():
     return week_dates
 
 
-def track(proj: str, delay: int = 0, smart_today: bool = True) -> None:
+def track(proj: str, delay: int = 0, smart_today: bool = True, autoopen: bool = False) -> None:
     """Start/stop time tracking for the given project (with an optional start delay in mins)."""
     # Setup
     path = DIR_SYNC / f'{proj}.tsv'
@@ -248,19 +250,41 @@ def track(proj: str, delay: int = 0, smart_today: bool = True) -> None:
         hours = end = 'wip'
         sesh = [date, hours, start, end]
         data.appendleft(sesh)
-        message = f'{proj}_9ece6a'
+
+        message = proj
+        color = '9ece6a'
+        toast(message, color)
     else:
         start = datetime.datetime.strptime(latest[0] + latest[2], '%Y-%m-%d%H:%M')
         duration = (now - start).seconds / 3600
         latest[1] = f'{duration:0.2f}'
         latest[3] = now.strftime('%H:%M')
-        message = f'{proj} ({latest[1]}h)_f7768e'
+
+        if autoopen:
+            subprocess.run(['subl.exe', f'{path}:1:29'])
+
+        message = f'{proj} ({latest[1]}h)'
+        color = 'f7768e'
+        toast(message, color)
 
     # Write data
     with open(path, 'w+', newline='\n', encoding='utf-8') as f:
         f.write('\n'.join(['\t'.join(entry) for entry in data]))
     pyperclip.copy(message)
     print(message)
+
+
+def toast(message: str, color: str) -> None:
+    """Display a toast message."""
+    ahk = AHK()
+    script = f'''
+        SplashImage,, B1 FS12 CW1a1b26 CT{color}, {message},,, Consolas
+        Sleep, 3000
+        SplashImage
+        SplashImage, Off
+    '''
+    ahk.run_script(script)
+
 
 
 
@@ -314,16 +338,21 @@ if __name__ == '__main__':
             # Start/end a tracker
             proj = sys.argv[2]
             smart_today = False if proj == 'mind' else True
+            delay, autoopen = 0, False
             match proj:
                 case 'mind':
                     delay = 30
                 case 'body':
                     delay = 20
+                    autoopen = True
                 case 'lang':
+                    delay = None
                     print('lang cannot be manually tracked!')
+                case 'social':
+                    autoopen = True
                 case _:
-                    delay = 0
-            track(proj, delay, smart_today)
+                    print('something probably went wrong!')
+            track(proj, delay, smart_today, autoopen)
         case _:
             name = mode
             dataset = datasets[name]
