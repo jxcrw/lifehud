@@ -3,12 +3,8 @@
 
 from collections import deque
 from datetime import datetime, timedelta
-import sys
 
 import pyperclip
-
-PATH = r'C:\~\dev\lifehud'
-sys.path.append(PATH)
 
 from lifehud import DIR_SYNC
 
