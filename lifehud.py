@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """LifeHUD"""
 
-from collections import defaultdict
+from collections import defaultdict, deque
 import datetime
 import os
 from pathlib import Path
 import sys
 
 from colorama import Back, Fore, Style
+import pyperclip
 
 from _cfg.config import DIR_DATA, DIR_ROOT, DIR_SYNC
 
@@ -39,7 +40,7 @@ def build_graph(name, data: set, standard: int, year: int) -> str:
     delta = datetime.timedelta(days=1)
     start = datetime.date(year, 1, 1)
     end_year = datetime.date(year, 12, 31)
-    today = get_today()
+    today = get_smart_today()
 
     # Build dict(weeknum → dict(daynum → date))
     curr, weeks = start, defaultdict(dict)
@@ -88,7 +89,7 @@ def build_graph(name, data: set, standard: int, year: int) -> str:
 
 
 def get_dot(date, data, standard) -> str:
-    today = get_today()
+    today = get_smart_today()
     date = date.date()
     if date in data:
         val = data[date]
@@ -135,7 +136,7 @@ def result2fore(result: float):
 
 
 def process_work():
-    with open(DIR_ROOT / 'work.txt', 'r', encoding='utf-8') as f:
+    with open(DIR_ROOT / 'work.tsv', 'r', encoding='utf-8') as f:
         data = [line.strip().split('\t')[0] for line in f]
     dataset = defaultdict(int)
     for line in data:
@@ -144,7 +145,7 @@ def process_work():
     items = [[str(key), str(val)] for key, val in dataset.items()]
     items = ['\t'.join(item) for item in items]
     items.sort()
-    with open(DIR_DATA / 'work.txt', 'w+', newline='\n', encoding='utf-8') as f:
+    with open(DIR_DATA / 'work.tsv', 'w+', newline='\n', encoding='utf-8') as f:
         f.write('\n'.join(items))
 
 
@@ -173,7 +174,7 @@ def calc_life(datasets, cags):
     items = [[str(key), str(val)] for key, val in scores.items()]
     items = ['\t'.join(item) for item in items]
     items.sort(reverse=True)
-    with open(DIR_DATA / 'LIFE.txt', 'w+', newline='\n', encoding='utf-8') as f:
+    with open(DIR_DATA / 'LIFE.tsv', 'w+', newline='\n', encoding='utf-8') as f:
         f.write('\n'.join(items))
 
 
@@ -189,12 +190,12 @@ def go_by_year(name: str, dataset, standard):
         print()
 
 
-def get_today():
+def get_smart_today():
     # Get wake up time
-    with open(DIR_SYNC / 'mind.txt', 'r', encoding='utf-8') as f:
+    with open(DIR_SYNC / 'mind.tsv', 'r', encoding='utf-8') as f:
         data = [line.strip().split('\t') for line in f]
         latest = data[0]
-        wake = datetime.datetime.strptime(latest[0] + latest[3], '%Y-%m-%d%H:%M')
+        wake = datetime.datetime.strptime(latest[0] + latest[2], '%Y-%m-%d%H:%M')
 
     # Compare to now
     now = datetime.datetime.now()
@@ -224,6 +225,42 @@ def get_current_week_dates():
         week_dates.append(start_of_week + datetime.timedelta(days=i))
 
     return week_dates
+
+
+def track(proj: str, delay: int = 0, smart_today: bool = True) -> None:
+    """Start/stop time tracking for the given project (with an optional start delay in mins)."""
+    # Setup
+    path = DIR_SYNC / f'{proj}.tsv'
+    with open(path, 'r', encoding='utf-8') as f:
+        data = deque([line.strip().split('\t') for line in f])
+
+    now = datetime.datetime.now()
+    today = get_smart_today() if smart_today else datetime.datetime.today()
+    now = now.replace(year=today.year, month=today.month, day=today.day)
+    latest = data[0]
+    is_new = latest[1] != 'wip'
+
+    # Start or stop tracker
+    if is_new:
+        start = now + datetime.timedelta(minutes=delay)
+        date = now.strftime('%Y-%m-%d')
+        start = start.strftime('%H:%M')
+        hours = end = 'wip'
+        sesh = [date, hours, start, end]
+        data.appendleft(sesh)
+        message = f'{proj}_9ece6a'
+    else:
+        start = datetime.datetime.strptime(latest[0] + latest[2], '%Y-%m-%d%H:%M')
+        duration = (now - start).seconds / 3600
+        latest[1] = f'{duration:0.2f}'
+        latest[3] = now.strftime('%H:%M')
+        message = f'{proj} ({latest[1]}h)_f7768e'
+
+    # Write data
+    with open(path, 'w+', newline='\n', encoding='utf-8') as f:
+        f.write('\n'.join(['\t'.join(entry) for entry in data]))
+    pyperclip.copy(message)
+    print(message)
 
 
 
@@ -273,6 +310,20 @@ if __name__ == '__main__':
                     project.append(dot)
                 strings.append(project)
             print('\n'.join([' '.join(entry) for entry in strings]))
+        case 'track':
+            # Start/end a tracker
+            proj = sys.argv[2]
+            smart_today = False if proj == 'mind' else True
+            match proj:
+                case 'mind':
+                    delay = 30
+                case 'body':
+                    delay = 20
+                case 'lang':
+                    print('lang cannot be manually tracked!')
+                case _:
+                    delay = 0
+            track(proj, delay, smart_today)
         case _:
             name = mode
             dataset = datasets[name]
