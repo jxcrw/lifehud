@@ -5,12 +5,12 @@ from pathlib import Path
 import shutil
 import sqlite3
 
-from lifehud import DIR_DATA, USER
+from _cfg.config import DIR_DATA, DIR_SYNC
 
 
 # Setup
 FILE_IN = Path(r'C:\scoop\persist\anki\data\Jak\collection.anki2')
-FILE_WORK = Path(rf'C:\Users\{USER}\Dropbox\lifehud\collection.anki2')
+FILE_WORK = Path(DIR_SYNC / 'collection.anki2')
 shutil.copy(FILE_IN, FILE_WORK)
 
 

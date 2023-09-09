@@ -9,11 +9,7 @@ import sys
 
 from colorama import Back, Fore, Style
 
-USER = os.getenv('USERNAME')
-DIR_ROOT = Path(r'C:\~\dev\lifehud')
-DIR_DATA = DIR_ROOT / '_data'
-DIR_SYNC = Path(rf'C:\Users\{USER}\Dropbox\lifehud')
-DIR_DATA = DIR_SYNC
+from _cfg.config import DIR_DATA, DIR_ROOT, DIR_SYNC
 
 
 def load_data() -> dict:

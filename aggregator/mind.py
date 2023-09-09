@@ -6,7 +6,7 @@ from datetime import datetime
 from pathlib import Path
 from zipfile import ZipFile
 
-from lifehud import DIR_DATA
+from _cfg.config import DIR_DATA
 
 
 # Setup

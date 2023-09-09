@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 
 import pyperclip
 
-from lifehud import DIR_SYNC
+from _cfg.config import DIR_SYNC
 
 
 # Setup
