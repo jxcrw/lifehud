@@ -214,10 +214,12 @@ def get_smart_today():
 
 def get_current_week_dates():
     # Get the current date
-    current_date = datetime.datetime.now()
+    smart_today = get_smart_today()
+    current_date = datetime.datetime(year=smart_today.year, month=smart_today.month, day=smart_today.day)
 
     # Find the starting date (Monday) of the current week
-    start_of_week = current_date - datetime.timedelta(days=current_date.weekday())
+    days_to_subtract = (current_date.weekday() + 1) % 7
+    start_of_week = current_date - datetime.timedelta(days=days_to_subtract)
 
     # Create a list to store the datetime objects for each day in the week
     week_dates = []
@@ -331,7 +333,7 @@ if __name__ == '__main__':
                 data = datasets[cag]
                 for date in dates:
                     dot = get_dot(date, data, std)
-                    project.append(dot)
+                    project.append(dot + Back.RESET)
                 strings.append(project)
             print('\n'.join([' '.join(entry) for entry in strings]))
         case 'track':
