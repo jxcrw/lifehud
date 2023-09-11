@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """LifeHUD2"""
 
-import os
-from pathlib import Path
+from dataclasses import dataclass
 
 from pandas import DataFrame
 import pandas as pd
@@ -10,16 +9,24 @@ import pandas as pd
 from _cfg.config import DIR_SYNC
 
 
-def load_dataframes() -> dict[str, DataFrame]:
-    """Load up dataframes of life data."""
-    dfs = {}
-    for root, dirs, files in os.walk(DIR_SYNC):
-        files = [Path(root, file) for file in files if '0' in file]
-        for file in files:
-            df = pd.read_csv(file, sep='\t')
-            dfs[file.stem] = df
-    return dfs
+@dataclass
+class Project:
+    """A life project."""
+    name: str
+    metric: str
+    std_lo: float
+    std_hi: float
+    delayed_start: int = 0
+    autoopen: bool = False
+    weekmask: str = 'Sun Mon Tue Wed Thu Fri Sat'
+    data: DataFrame = None
+
+    def load_data(self) -> None:
+        """Load up the project's data."""
+        path = DIR_SYNC / f'{self.name}.tsv'
+        self.data = pd.read_csv(path, sep='\t')
 
 
 if __name__ == '__main__':
-    dfs = load_dataframes()
+    project_0 = Project('0', 'hours', 1, 1, 20, True, 'Sun Mon Tue Wed Thu Fri')
+    project_0.load_data()
