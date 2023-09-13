@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """Settings"""
 
-from dataclasses import dataclass
-from datetime import date
+from datetime import date, time
 import os
 from pathlib import Path
 import sys
@@ -21,8 +20,16 @@ DIR_DATA = DIR_SYNC  # TODO
 
 
 # Data formatting
+def convert_hours_wip_aware(val: str) -> str | float:
+    """Perform WIP-aware conversion of an hours value."""
+    output = val if val == WIP else float(val)
+    return output
+
 CONVERTERS = {
-    'date': date.fromisoformat
+    'date': date.fromisoformat,
+    'hours': convert_hours_wip_aware,
+    'start': time.fromisoformat,
+    'end': time.fromisoformat,
 }
 
 
