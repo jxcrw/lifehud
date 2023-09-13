@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """A life project"""
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from colorama import Back
 from pandas import read_csv
@@ -45,7 +45,8 @@ class Project:
         day_val += rows_done[metric].sum()
 
         # Add value for wip row (if present)
-        if self.is_wip():
+        rows_wip = rows.loc[rows[metric] == WIP]
+        if len(rows_wip) > 0:
             start = rows.iloc[0]['start']
             start = datetime.combine(day, start)
             now = datetime.now()
@@ -74,14 +75,21 @@ class Project:
         return latest == WIP
 
 
-    def get_dot(self, day: date) -> str:
-        """Create a contribution dot for a day."""
-        dot = DOT_WIP if self.is_wip() else DOT_STD
-        score = self.score_day(day)
-        fore = SCORE2FORE[score]
-
+    def build_dot(self, day: date) -> str:
+        """Build a pretty contribution dot for the given day."""
+        dot, score = DOT_STD, self.score_day(day)
         if day == self.today:
+            if self.is_wip(): dot = DOT_WIP
             dot = underline(dot) if score != SCORE_ZERO else Back.BLACK + dot
-
+        fore = SCORE2FORE[score]
         return fore + dot + Back.RESET
 
+
+    def render_week(self, day: date) -> str:
+        """Create a mini contribution graph for the week containing the given day."""
+        days_since_sunday = (day.weekday() + 1) % 7
+        sunday = day - timedelta(days=days_since_sunday)
+        name = [Fore.WHITE + self.name]
+        dots = [self.build_dot(sunday + timedelta(days=i)) for i in range(7)]
+        week = ' '.join(name + dots)
+        return week

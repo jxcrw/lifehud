@@ -7,6 +7,7 @@ from pathlib import Path
 import sys
 
 from colorama import Fore
+from pandas import read_csv
 
 
 # Pathing
@@ -16,6 +17,14 @@ DIR_DATA = DIR_ROOT / '_arc/data'
 DIR_SYNC = DIR_HOME / 'Dropbox/lifehud'
 DIR_SCOOP = Path(os.getenv('SCOOP'))
 DIR_DATA = DIR_SYNC  # TODO
+
+
+# Contributions and scoring
+WIP = 'wip'
+SCORE_GOOD = 1
+SCORE_OKAY = 0.5
+SCORE_BAD = 0.25
+SCORE_ZERO = 0
 
 
 # Data formatting
@@ -32,11 +41,9 @@ CONVERTERS = {
 }
 
 
-# Contribution scoring
-SCORE_GOOD = 1
-SCORE_OKAY = 0.5
-SCORE_BAD = 0.25
-SCORE_ZERO = 0
+# Smart today
+mind_data = read_csv(DIR_SYNC / f'0.tsv', sep='\t', converters=CONVERTERS)
+SMART_TODAY = mind_data.iloc[0]['date']
 
 
 # TUI
@@ -49,7 +56,3 @@ SCORE2FORE = {
 
 DOT_STD = '⯀'  # Alt: ●
 DOT_WIP = 'w'
-
-
-# Misc
-WIP = 'wip'
