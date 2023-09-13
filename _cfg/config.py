@@ -24,3 +24,10 @@ DIR_DATA = DIR_SYNC  # TODO
 CONVERTERS = {
     'date': date.fromisoformat
 }
+
+
+# Contribution scoring
+SCORE_GOOD = 1
+SCORE_OKAY = 0.5
+SCORE_BAD = 0.25
+SCORE_ZERO = 0

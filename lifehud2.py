@@ -6,7 +6,7 @@ from datetime import date
 from project import Project
 
 
-PROJECTS = [Project('0', 'hours', 7, 7.9, 25, False, 'Sun Mon Tue Wed Thu Fri Sat')]
+PROJECTS = [Project('0', 'hours', 6.9, 7.9, 25, False, 'Sun Mon Tue Wed Thu Fri Sat')]
 PROJECTS = {p.name: p for p in PROJECTS}
 [p.load_data() for p in PROJECTS.values()]
 
