@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """A life project"""
 
-from datetime import date, datetime
+from datetime import datetime
 
+from colorama import Back
 from pandas import read_csv
 
-from _cfg.config import CONVERTERS, DIR_SYNC, SCORE_BAD, SCORE_GOOD, SCORE_OKAY, SCORE_ZERO, WIP
+from _cfg.config import *
+from utils import underline
 
 
 class Project:
@@ -19,6 +21,7 @@ class Project:
                  delayed_start: int,
                  autoopen: bool,
                  weekmask: str,
+                 today: date,
                  ):
         self.name = name
         self.metric = metric
@@ -27,6 +30,7 @@ class Project:
         self.delayed_start = delayed_start
         self.autoopen = autoopen
         self.weekmask = weekmask
+        self.today = today
         self.data = read_csv(DIR_SYNC / f'{name}.tsv', sep='\t', converters=CONVERTERS)
 
 
@@ -41,9 +45,8 @@ class Project:
         day_val += rows_done[metric].sum()
 
         # Add value for wip row (if present)
-        rows_wip = rows.loc[rows[metric] == WIP]
-        if len(rows_wip) > 0:
-            start = rows_wip.iloc[0]['start']
+        if self.is_wip():
+            start = rows.iloc[0]['start']
             start = datetime.combine(day, start)
             now = datetime.now()
             day_val += (now - start).seconds / 3600
@@ -63,3 +66,22 @@ class Project:
         else:
             score = SCORE_ZERO
         return score
+
+
+    def is_wip(self) -> bool:
+        """Get whether the project has a WIP entry."""
+        latest = self.data.iloc[0][self.metric]
+        return latest == WIP
+
+
+    def get_dot(self, day: date) -> str:
+        """Create a contribution dot for a day."""
+        dot = DOT_WIP if self.is_wip() else DOT_STD
+        score = self.score_day(day)
+        fore = SCORE2FORE[score]
+
+        if day == self.today:
+            dot = underline(dot) if score != SCORE_ZERO else Back.BLACK + dot
+
+        return fore + dot + Back.RESET
+

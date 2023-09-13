@@ -11,7 +11,7 @@ if __name__ == '__main__':
     # │ Setup
     # └─────────────────────────────────────────────────────────────────────────────
     # Determine smart today
-    mind = Project('0', 'hours', 6.9, 7.9, 25, False, 'Sun Mon Tue Wed Thu Fri Sat')
+    mind = Project('0', 'hours', 6.9, 7.9, 25, False, 'Sun Mon Tue Wed Thu Fri Sat', date.today())
     SMART_TODAY = mind.data.iloc[0]['date']
 
     # Initialize other projects

@@ -6,8 +6,7 @@ import os
 from pathlib import Path
 import sys
 
-from pandas import DataFrame
-import pandas as pd
+from colorama import Fore
 
 
 # Pathing
@@ -38,3 +37,19 @@ SCORE_GOOD = 1
 SCORE_OKAY = 0.5
 SCORE_BAD = 0.25
 SCORE_ZERO = 0
+
+
+# TUI
+SCORE2FORE = {
+    SCORE_GOOD: Fore.GREEN,
+    SCORE_OKAY: Fore.YELLOW,
+    SCORE_BAD: Fore.RED,
+    SCORE_ZERO: Fore.LIGHTBLACK_EX,
+}
+
+DOT_STD = '⯀'  # Alt: ●
+DOT_WIP = 'w'
+
+
+# Misc
+WIP = 'wip'
