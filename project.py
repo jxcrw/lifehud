@@ -8,7 +8,7 @@ import subprocess
 from colorama import Back
 
 from _cfg.config import *
-from utils import underline
+from utils import toast, underline
 
 
 class Project:
@@ -135,11 +135,15 @@ class Project:
             data.loc[-1] = row
             data.index = data.index + 1
             data.sort_index(inplace=True)
+            toast(self.name, COLOR_FG)
         else:
             start = datetime.combine(latest['date'], latest['start'])
             hours = (now - start).seconds / 3600
             data.loc[0, metric] = hours
             data.loc[0, 'end'] = now
+            score = self.score_day(latest['date'])
+            color = SCORE2COLOR[score]
+            toast(f'{self.name} ({hours:0.2f}h)', color)
 
         self.save_to_disk()
         if self.autoopen and not is_new:

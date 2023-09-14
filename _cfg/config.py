@@ -57,3 +57,18 @@ SCORE2FORE = {
 
 DOT_STD = '⯀'  # Alt: ●
 DOT_WIP = 'w'
+
+
+# Toast styling
+COLOR_FG = 'c0caf5'
+COLOR_BG = '1a1b26'
+COLOR_GREEN = '9ece6a'
+COLOR_YELLOW = 'f7b273'
+COLOR_RED = 'f7768e'
+
+SCORE2COLOR = {
+    SCORE_GOOD: COLOR_GREEN,
+    SCORE_OKAY: COLOR_YELLOW,
+    SCORE_BAD: COLOR_RED,
+    SCORE_ZERO: COLOR_RED,
+}
