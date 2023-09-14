@@ -13,7 +13,7 @@ from project import Project
 # │ Init
 # └─────────────────────────────────────────────────────────────────────────────
 PROJECTS = [
-    Project('mind', 'hours', 6.9, 7.9, 25, False, 'Sun Mon Tue Wed Thu Fri Sat', SMART_TODAY),
+    Project('mind', 'hours', 6.9, 7.9, 25, False, 'Sun Mon Tue Wed Thu Fri Sat', date.today()),
     Project('body', 'hours', 1.0, 1.0, 20, True, 'Sun Mon Tue Wed Thu Fri Sat', SMART_TODAY),
     Project('pool', 'hours', 0.9, 1.9, 00, True, 'Sun Mon Tue Wed Thu Fri Sat', SMART_TODAY),
     Project('lang', 'revs',  10,   40, 00, False, 'Sun Mon Tue Wed Thu Fri Sat', SMART_TODAY),

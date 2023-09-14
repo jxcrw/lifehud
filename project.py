@@ -137,7 +137,7 @@ class Project:
         if is_new:
             date, hours, end = self.today, WIP, WIP_TIME
             start = now + timedelta(minutes=self.delayed_start)
-            row = [date, hours, start, end]
+            row = [date, hours, start, end, 'kthx', 'kthx']
             data.loc[-1] = row
             data.index = data.index + 1
             data.sort_index(inplace=True)
