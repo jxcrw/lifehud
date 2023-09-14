@@ -20,7 +20,6 @@ DIR_DATA = DIR_SYNC  # TODO
 
 
 # Contributions and scoring
-WIP = 'wip'
 SCORE_GOOD = 1
 SCORE_OKAY = 0.5
 SCORE_BAD = 0.25
@@ -28,21 +27,16 @@ SCORE_ZERO = 0
 
 
 # Data formatting
-def convert_hours_wip_aware(val: str) -> str | float:
-    """Perform WIP-aware conversion of an hours value."""
-    output = val if val == WIP else float(val)
-    return output
-
+SEP = '\t'
+WIP = 0.00
+WIP_TIME = time(hour=0, minute=0)
+FMT_TIME = '%H:%M'
+FMT_FLOAT = '%.2f'
 CONVERTERS = {
     'date': date.fromisoformat,
-    'hours': convert_hours_wip_aware,
     'start': time.fromisoformat,
     'end': time.fromisoformat,
 }
-
-SEP = '\t'
-FMT_FLOAT = '%.2f'
-FMT_TIME = '%H:%M'
 
 EDITOR = 'subl.exe'
 ROWCOL = ':2:28'
