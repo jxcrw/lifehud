@@ -43,7 +43,7 @@ ROWCOL = ':2:28'
 
 
 # Smart today
-mind_data = read_csv(DIR_SYNC / f'0.tsv', sep='\t', converters=CONVERTERS)
+mind_data = read_csv(DIR_SYNC / f'mynd.tsv', sep='\t', converters=CONVERTERS)
 SMART_TODAY = mind_data.iloc[0]['date']
 
 

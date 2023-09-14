@@ -91,8 +91,7 @@ class Project:
         days_since_sunday = (day.weekday() + 1) % 7
         sunday = day - timedelta(days=days_since_sunday)
         dots = [self.build_dot(sunday + timedelta(days=i)) for i in range(7)]
-        week = ' '.join([self.name] + dots)
-        return week
+        return ' '.join(dots)
 
 
     def render_year(self, year: int) -> str:
@@ -119,8 +118,15 @@ class Project:
         # Regroup weekdots by day of week
         daysof = [dayof for dayof in zip(*weekdots)]
         dots = '\n'.join([' '.join(dayof) for dayof in daysof])
-        year = f'{self.name}\n{dots}'
-        return year
+        return dots
+
+
+    def render_all_years(self) -> str:
+        """Create yearly contribution graphs for all project data."""
+        years = [date.year for date in self.data['date']]
+        years = sorted(set(years), reverse=True)
+        yearhuds = [f'{self.name}-{year}\n{self.render_year(year)}' for year in years]
+        return '\n\n'.join(yearhuds)
 
 
     def track(self) -> None:

@@ -13,9 +13,10 @@ from project import Project
 # │ Init
 # └─────────────────────────────────────────────────────────────────────────────
 PROJECTS = [
-    Project('0', 'hours', 6.9, 7.9, 25, True, 'Sun Mon Tue Wed Thu Fri Sat', SMART_TODAY),
-    Project('0', 'hours', 6.9, 7.9, 25, True, 'Sun Mon Tue Wed Thu Fri Sat', SMART_TODAY),
+    Project('mynd', 'hours', 6.9, 7.9, 25, True, 'Sun Mon Tue Wed Thu Fri Sat', SMART_TODAY),
+    Project('bodi', 'hours', 6.9, 7.9, 25, True, 'Sun Mon Tue Wed Thu Fri Sat', SMART_TODAY),
 ]
+PROJECTS = {p.name: p for p in PROJECTS}
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────
@@ -34,21 +35,31 @@ def week(num):
     for i in range(num):
         day = today - timedelta(days=i * 7)
         weeknum = day.strftime('%U')
-        weekhud = [p.render_week(day) for p in PROJECTS]
+        weekhud = [f'{p.name} {p.render_week(day)}' for p in PROJECTS.values()]
         weekhud = '\n'.join(weekhud)
         weekhuds.append(f'Week {weeknum}\n{weekhud}')
-    print('\n', '\n\n'.join(weekhuds))
+    print('\n\n'.join(weekhuds))
 
 
 @cli.command()
 def year():
     """Render the yearly HUD."""
     year = date.today().year
-    yearhud = [p.render_year(year) for p in PROJECTS]
+    yearhud = [f'{p.name}\n{p.render_year(year)}' for p in PROJECTS.values()]
     yearhud = '\n\n'.join(yearhud)
-    print('\n', yearhud)
+    print(yearhud)
+
+
+@cli.command()
+@click.argument('name', nargs=1)
+def project(name):
+    """Render all data for the given project (by year)."""
+    proj = PROJECTS[name]
+    all_years = proj.render_all_years()
+    print(all_years)
 
 
 if __name__ == '__main__':
     # command()
+    print()
     cli()
