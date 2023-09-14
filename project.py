@@ -90,9 +90,8 @@ class Project:
         """Create a mini contribution graph for the week containing the given day."""
         days_since_sunday = (day.weekday() + 1) % 7
         sunday = day - timedelta(days=days_since_sunday)
-        name = [self.name]
         dots = [self.build_dot(sunday + timedelta(days=i)) for i in range(7)]
-        week = ' '.join(name + dots)
+        week = ' '.join([self.name] + dots)
         return week
 
 
@@ -119,8 +118,9 @@ class Project:
 
         # Regroup weekdots by day of week
         daysof = [dayof for dayof in zip(*weekdots)]
-        graph = '\n'.join([' '.join(dayof) for dayof in daysof])
-        return graph
+        dots = '\n'.join([' '.join(dayof) for dayof in daysof])
+        year = f'{self.name}\n{dots}'
+        return year
 
 
     def track(self) -> None:

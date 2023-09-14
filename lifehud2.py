@@ -37,10 +37,18 @@ def week(num):
         weekhud = [p.render_week(day) for p in PROJECTS]
         weekhud = '\n'.join(weekhud)
         weekhuds.append(f'Week {weeknum}\n{weekhud}')
-    print('\n\n'.join(weekhuds))
+    print('\n', '\n\n'.join(weekhuds))
+
+
+@cli.command()
+def year():
+    """Render the yearly HUD."""
+    year = date.today().year
+    yearhud = [p.render_year(year) for p in PROJECTS]
+    yearhud = '\n\n'.join(yearhud)
+    print('\n', yearhud)
 
 
 if __name__ == '__main__':
     # command()
-    print()
     cli()
