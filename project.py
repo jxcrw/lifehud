@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """A life project"""
 
+from collections import defaultdict
 from datetime import datetime, timedelta
 
 from colorama import Back
@@ -93,3 +94,30 @@ class Project:
         dots = [self.build_dot(sunday + timedelta(days=i)) for i in range(7)]
         week = ' '.join(name + dots)
         return week
+
+
+    def render_year(self, year: int) -> str:
+        """Create a full contribution graph for the given year."""
+        # Build dict(weeknum → dict(daynum → date))
+        soy = date(year, 1, 1)
+        eoy = date(year, 12, 31)
+        day, weeknums = soy, defaultdict(dict)
+        while day <= eoy:
+            weeknum = int(day.strftime('%U'))
+            daynum = int(day.strftime('%w'))
+            weeknums[weeknum][daynum] = day
+            day += timedelta(days=1)
+
+        # Build dots for each day of each week
+        weekdots = []
+        for daynums in weeknums.values():
+            daydots = []
+            for daynum in range(7):
+                daydot = self.build_dot(daynums[daynum]) if daynum in daynums else ' '
+                daydots.append(daydot)
+            weekdots.append(daydots)
+
+        # Regroup weekdots by day of week
+        daysof = [dayof for dayof in zip(*weekdots)]
+        graph = '\n'.join([' '.join(dayof) for dayof in daysof])
+        return graph
