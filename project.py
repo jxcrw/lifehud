@@ -3,9 +3,9 @@
 
 from collections import defaultdict
 from datetime import datetime, timedelta
+import subprocess
 
 from colorama import Back
-from pandas import read_csv
 
 from _cfg.config import *
 from utils import underline
@@ -32,7 +32,8 @@ class Project:
         self.autoopen = autoopen
         self.weekmask = weekmask
         self.today = today
-        self.data = read_csv(DIR_SYNC / f'{name}.tsv', sep='\t', converters=CONVERTERS)
+        self.path = DIR_SYNC / f'{name}.tsv'
+        self.data = read_csv(self.path, sep=SEP, converters=CONVERTERS)
 
 
     def get_day_val(self, day: date) -> float | str:
@@ -48,8 +49,7 @@ class Project:
         # Add value for wip row (if present)
         rows_wip = rows.loc[rows[metric] == WIP]
         if len(rows_wip) > 0:
-            start = rows.iloc[0]['start']
-            start = datetime.combine(day, start)
+            start = datetime.combine(day, rows_wip.iloc[0]['start'])
             now = datetime.now()
             day_val += (now - start).seconds / 3600
 
@@ -121,3 +121,36 @@ class Project:
         daysof = [dayof for dayof in zip(*weekdots)]
         graph = '\n'.join([' '.join(dayof) for dayof in daysof])
         return graph
+
+
+    def track(self) -> None:
+        """Start/stop time tracking for the project."""
+        metric, data, now = self.metric, self.data, datetime.now()
+        latest = data.iloc[0]
+        is_new = latest[metric] != WIP
+        if is_new:
+            date, hours, end = self.today, WIP, WIP_TIME
+            start = now + timedelta(minutes=self.delayed_start)
+            row = [date, hours, start, end]
+            data.loc[-1] = row
+            data.index = data.index + 1
+            data.sort_index(inplace=True)
+        else:
+            start = datetime.combine(latest['date'], latest['start'])
+            hours = (now - start).seconds / 3600
+            data.loc[0, metric] = hours
+            data.loc[0, 'end'] = now
+
+        self.save_to_disk()
+        if self.autoopen and not is_new:
+            subprocess.run([EDITOR, f'{self.path}{ROWCOL}'])
+
+
+    def save_to_disk(self) -> None:
+        """Save the project to disk."""
+        data, path = self.data, self.path
+        format_times = lambda x: x.strftime(FMT_TIME)
+        data['start'] = data['start'].apply(format_times)
+        data['end'] = data['end'].apply(format_times)
+        data.to_csv(path, sep=SEP, index=False, float_format=FMT_FLOAT)
+

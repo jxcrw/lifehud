@@ -40,6 +40,13 @@ CONVERTERS = {
     'end': time.fromisoformat,
 }
 
+SEP = '\t'
+FMT_FLOAT = '%.2f'
+FMT_TIME = '%H:%M'
+
+EDITOR = 'subl.exe'
+ROWCOL = ':2:28'
+
 
 # Smart today
 mind_data = read_csv(DIR_SYNC / f'0.tsv', sep='\t', converters=CONVERTERS)

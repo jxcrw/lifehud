@@ -12,7 +12,7 @@ if __name__ == '__main__':
     # │ Setup
     # └─────────────────────────────────────────────────────────────────────────────
     # Determine smart today
-    mind = Project('0', 'hours', 6.9, 7.9, 25, False, 'Sun Mon Tue Wed Thu Fri Sat', SMART_TODAY)
+    mind = Project('0', 'hours', 6.9, 7.9, 25, True, 'Sun Mon Tue Wed Thu Fri Sat', SMART_TODAY)
 
     # Initialize other projects
     PROJECTS = [
