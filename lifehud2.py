@@ -26,6 +26,20 @@ def cli():
     pass
 
 
+@cli.command()
+@click.option('--num', '-n', default=1, help="The number of weeks to render, starting from the current week.")
+def week(num):
+    """Render the weekly HUD."""
+    weekhuds, today = [], date.today()
+    for i in range(num):
+        day = today - timedelta(days=i * 7)
+        weeknum = day.strftime('%U')
+        weekhud = [p.render_week(day) for p in PROJECTS]
+        weekhud = '\n'.join(weekhud)
+        weekhuds.append(f'Week {weeknum}\n{weekhud}')
+    print('\n\n'.join(weekhuds))
+
+
 if __name__ == '__main__':
     # command()
     print()

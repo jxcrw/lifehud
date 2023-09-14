@@ -83,14 +83,14 @@ class Project:
             if self.is_wip(): dot = DOT_WIP
             dot = underline(dot) if score != SCORE_ZERO else Back.BLACK + dot
         fore = SCORE2FORE[score]
-        return fore + dot + Back.RESET
+        return fore + dot + Fore.RESET + Back.RESET
 
 
     def render_week(self, day: date) -> str:
         """Create a mini contribution graph for the week containing the given day."""
         days_since_sunday = (day.weekday() + 1) % 7
         sunday = day - timedelta(days=days_since_sunday)
-        name = [Fore.WHITE + self.name]
+        name = [self.name]
         dots = [self.build_dot(sunday + timedelta(days=i)) for i in range(7)]
         week = ' '.join(name + dots)
         return week
