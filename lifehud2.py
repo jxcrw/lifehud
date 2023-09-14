@@ -14,7 +14,7 @@ from project import Project
 # └─────────────────────────────────────────────────────────────────────────────
 PROJECTS = [
     Project('mynd', 'hours', 6.9, 7.9, 25, True, 'Sun Mon Tue Wed Thu Fri Sat', SMART_TODAY),
-    Project('bodi', 'hours', 6.9, 7.9, 25, True, 'Sun Mon Tue Wed Thu Fri Sat', SMART_TODAY),
+    Project('bodi', 'hours', 6.9, 7.9, 00, True, 'Sun Mon Tue Wed Thu Fri Sat', SMART_TODAY),
 ]
 PROJECTS = {p.name: p for p in PROJECTS}
 
@@ -23,8 +23,7 @@ PROJECTS = {p.name: p for p in PROJECTS}
 # │ CLI
 # └─────────────────────────────────────────────────────────────────────────────
 @click.group()
-def cli():
-    pass
+def cli(): pass
 
 
 @cli.command()
@@ -57,6 +56,14 @@ def project(name):
     proj = PROJECTS[name]
     all_years = proj.render_all_years()
     print(all_years)
+
+
+@cli.command()
+@click.argument('name', nargs=1)
+def track(name):
+    """Start/stop time tracking for the specified project."""
+    proj = PROJECTS[name]
+    proj.track()
 
 
 if __name__ == '__main__':
