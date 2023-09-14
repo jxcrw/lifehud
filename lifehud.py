@@ -19,7 +19,8 @@ def load_data() -> dict:
     """Load up the data to be graphed."""
     datafiles = []
     for root, dirs, files in os.walk(DIR_DATA):
-        files = [os.path.join(root, file) for file in files if '0' not in file]
+        protected = ['00.tsv', '01.tsv', 'bodi.tsv', 'mynd.tsv']
+        files = [os.path.join(root, file) for file in files if file not in protected]
         files = [Path(file) for file in files]
         datafiles.extend(files)
 
