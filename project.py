@@ -136,6 +136,8 @@ class Project:
         is_new = latest[metric] != WIP
         if is_new:
             date, hours, end = self.today, WIP, WIP_TIME
+            if self.name == SMART_TODAY_OWNER:
+                date += timedelta(days=1)
             start = now + timedelta(minutes=self.delayed_start)
             row = [date, hours, start, end, 'kthx', 'kthx']
             data.loc[-1] = row
