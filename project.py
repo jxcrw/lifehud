@@ -78,10 +78,14 @@ class Project:
 
     def build_dot(self, day: date) -> str:
         """Build a pretty contribution dot for the given day."""
-        dot, score = DOT_STD, self.score_day(day)
+        dot, score, day_of_week = DOT_STD, self.score_day(day), f'{day:%a}'
         if day == self.today:
-            if self.is_wip(): dot = DOT_WIP
-            dot = underline(dot) if score != SCORE_ZERO else Back.BLACK + dot
+            if self.is_wip():
+                dot = DOT_WIP
+            if score > SCORE_ZERO:
+                dot = underline(dot)
+            if score == SCORE_ZERO and day_of_week in self.weekmask:
+                dot = Back.BLACK + dot
         fore = SCORE2FORE[score]
         return fore + dot + Fore.RESET + Back.RESET
 

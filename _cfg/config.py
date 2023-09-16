@@ -42,10 +42,14 @@ EDITOR = 'subl.exe'
 ROWCOL = ':2:28'
 
 
-# Smart today
+# Special date stuff
 SMART_TODAY_OWNER = 'mind'
 mind_data = read_csv(DIR_SYNC / f'{SMART_TODAY_OWNER}.tsv', sep='\t', converters=CONVERTERS)
 SMART_TODAY = mind_data.iloc[0]['date']
+
+WEEKMASK_ANY = set()
+WEEKMASK_ALL = {'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'}
+WEEKMASK_SIX = {'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'}
 
 
 # TUI
