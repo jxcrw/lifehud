@@ -4,6 +4,7 @@
 from datetime import date, timedelta
 
 import click
+from colorama import Fore
 
 from _cfg.config import SMART_TODAY
 from project import Project
@@ -31,15 +32,16 @@ def cli(): pass
 
 @cli.command()
 @click.option('--num', '-n', default=1, help="The number of weeks to render, starting from the current week.")
-def week(num):
+@click.option('--stats', '-s', is_flag=True, default=False, help="Show cumulative stats for week.")
+def week(num, stats):
     """Render the weekly HUD."""
     weekhuds, today = [], date.today()
     for i in range(num):
         day = today - timedelta(days=i * 7)
         weeknum = day.strftime('%U')
-        weekhud = [f'{p.name} {p.render_week(day)}' for p in PROJECTS.values()]
+        weekhud = [f'{p.name} {p.render_week(day, stats)}' for p in PROJECTS.values()]
         weekhud = '\n'.join(weekhud)
-        weekhuds.append(f'Week {weeknum}\n{weekhud}')
+        weekhuds.append(f'{Fore.BLACK}Week {weeknum}{Fore.RESET}\n{weekhud}')
     print('\n\n'.join(weekhuds))
 
 

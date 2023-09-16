@@ -86,12 +86,20 @@ class Project:
         return fore + dot + Fore.RESET + Back.RESET
 
 
-    def render_week(self, day: date) -> str:
+    def render_week(self, day: date, show_stats: bool = False) -> str:
         """Create a mini contribution graph for the week containing the given day."""
+        dots, total = [], 0
         days_since_sunday = (day.weekday() + 1) % 7
         sunday = day - timedelta(days=days_since_sunday)
-        dots = [self.build_dot(sunday + timedelta(days=i)) for i in range(7)]
-        return ' '.join(dots)
+        for i in range(7):
+            day = sunday + timedelta(days=i)
+            dot = self.build_dot(day)
+            val = self.get_day_val(day)
+            dots.append(dot)
+            total += val
+        stats = f'{Fore.BLACK}{total:0.0f}{self.metric[0]}{Fore.RESET}' if show_stats else ''
+        string = f"{' '.join(dots)}  {stats}"
+        return string
 
 
     def render_year(self, year: int) -> str:
