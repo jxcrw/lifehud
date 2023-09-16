@@ -15,10 +15,11 @@ from project import Project
 # └─────────────────────────────────────────────────────────────────────────────
 PROJECTS = [
     Project('mind', 'hours', 6.9, 7.9, 25, False, 'Sun Mon Tue Wed Thu Fri Sat', SMART_TODAY),
-    Project('body', 'hours', 1.0, 1.0, 20, True, 'Sun Mon Tue Wed Thu Fri Sat', SMART_TODAY),
+    Project('body', 'hours', 0.1, 0.1, 20, True, 'Sun Mon Tue Wed Thu Fri Sat', SMART_TODAY),
     Project('pool', 'hours', 0.9, 1.9, 00, True, 'Sun Mon Tue Wed Thu Fri Sat', SMART_TODAY),
-    Project('lang', 'revs',  10,   40, 00, False, 'Sun Mon Tue Wed Thu Fri Sat', SMART_TODAY),
+    Project('lang', 'hours', 0.1, 0.1, 00, False, 'Sun Mon Tue Wed Thu Fri Sat', SMART_TODAY),
     Project('work', 'hours', 1.0, 3.0, 00, True, 'Sun Mon Tue Wed Thu Fri Sat', SMART_TODAY),
+    Project('meet', 'hours', 0.1, 0.1, 00, True, 'Sun Mon Tue Wed Thu Fri Sat', SMART_TODAY),
 ]
 PROJECTS = {p.name: p for p in PROJECTS}
 
