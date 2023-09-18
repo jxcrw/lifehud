@@ -13,6 +13,6 @@ Initially popularized by version control sites like Github and Gitlab, the so-ca
 
 
 ## History
-- `Sep. 2023` v1.0.0.
-- `Sep. 2023` Initial dev.
-- `Apr. 2023` [Ideation](_arc/ideation.md).
+- `yyyy-mm-dd` v1.0.0.
+- `2023-09-03` Initial dev.
+- `2023-04-18` [Ideation](_arc/ideation.md).
