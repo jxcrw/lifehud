@@ -1,32 +1,14 @@
 #!/usr/bin/env python3
-"""LifeHUD2"""
+"""Lifehud"""
 
 from datetime import date, timedelta
 
 import click
 from colorama import Fore
 
-from _cfg.config import SMART_TODAY, WEEKMASK_ALL, WEEKMASK_ANY, WEEKMASK_SIX
-from project import Project
+from cfg.projects import PROJECTS
 
 
-# ┌─────────────────────────────────────────────────────────────────────────────
-# │ Init
-# └─────────────────────────────────────────────────────────────────────────────
-PROJECTS = [
-    Project('mind', 'hours', 6.9, 7.9, 25, False, WEEKMASK_ALL, SMART_TODAY),
-    Project('body', 'hours', 0.1, 0.1, 20, True, WEEKMASK_SIX, SMART_TODAY),
-    Project('pool', 'hours', 0.9, 1.9, 00, True, WEEKMASK_ALL, SMART_TODAY),
-    Project('lang', 'hours', 0.1, 0.1, 00, False, WEEKMASK_ALL, SMART_TODAY),
-    Project('work', 'hours', 1.0, 3.0, 00, True, WEEKMASK_ALL, SMART_TODAY),
-    Project('meet', 'hours', 0.1, 0.1, 00, True, WEEKMASK_ANY, SMART_TODAY),
-]
-PROJECTS = {p.name: p for p in PROJECTS}
-
-
-# ┌─────────────────────────────────────────────────────────────────────────────
-# │ CLI
-# └─────────────────────────────────────────────────────────────────────────────
 class GroupInlineOrder(click.Group):
     """Keep commands in the order they are defined in code in the help page."""
     def list_commands(self, ctx):
@@ -48,7 +30,7 @@ def week(num, stats, opt):
     if not opt:
         projects = {k: v for k, v in PROJECTS.items() if v.required}
     for i in range(num):
-        day = today - timedelta(days=i * 7)
+        day = today - timedelta(days=i*7)
         graphs = [p.render_week(day, stats) for p in projects.values()]
         weekhud = '\n'.join(graphs)
         weeknum = day.strftime('%U')
@@ -80,6 +62,7 @@ def track(name):
     """Start/stop time tracking for the specified project."""
     project = PROJECTS[name]
     project.track()
+
 
 
 if __name__ == '__main__':

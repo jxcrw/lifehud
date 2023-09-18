@@ -7,8 +7,8 @@ import subprocess
 
 from colorama import Back, Style
 
-from _cfg.config import *
-from utils import toast, underline
+from cfg.config import *
+from lib.utils import toast, underline
 
 
 class Project:

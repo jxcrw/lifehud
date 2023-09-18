@@ -3,7 +3,7 @@
 
 from ahk import AHK
 
-from _cfg.config import COLOR_BG
+from cfg.config import COLOR_BG
 
 
 def underline(string: str) -> str:

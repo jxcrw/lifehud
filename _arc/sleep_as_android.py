@@ -5,7 +5,7 @@ import csv
 from datetime import datetime
 from zipfile import ZipFile
 
-from _cfg.config import DIR_DATA, DIR_SYNC
+from cfg.config import DIR_DATA, DIR_SYNC
 
 
 # Setup

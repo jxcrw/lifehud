@@ -6,7 +6,7 @@ from pathlib import Path
 import shutil
 import sqlite3
 
-from _cfg.config import DIR_DATA, DIR_SCOOP, DIR_SYNC
+from cfg.config import DIR_DATA, DIR_SCOOP, DIR_SYNC
 
 
 # Setup

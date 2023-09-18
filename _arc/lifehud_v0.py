@@ -12,7 +12,7 @@ from ahk import AHK
 from colorama import Back, Fore, Style
 import pyperclip
 
-from _cfg.config import DIR_DATA, DIR_ROOT, DIR_SYNC
+from cfg.config import DIR_DATA, DIR_ROOT, DIR_SYNC
 
 
 def load_data() -> dict:
