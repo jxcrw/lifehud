@@ -27,7 +27,12 @@ PROJECTS = {p.name: p for p in PROJECTS}
 # ┌─────────────────────────────────────────────────────────────────────────────
 # │ CLI
 # └─────────────────────────────────────────────────────────────────────────────
-@click.group()
+class GroupInlineOrder(click.Group):
+    """Keep commands in the order they are defined in code in the help page."""
+    def list_commands(self, ctx):
+        return self.commands.keys()
+
+@click.group(cls=GroupInlineOrder)
 def cli(): pass
 
 
