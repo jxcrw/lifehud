@@ -43,9 +43,9 @@ def week(num, stats, opt):
     for i in range(num):
         day = today - timedelta(days=i * 7)
         weeknum = day.strftime('%U')
-        weekhud = [f'{p.name} {p.render_week(day, stats)}' for p in projects.values()]
+        weekhud = [p.render_week(day, stats) for p in projects.values()]
         weekhud = '\n'.join(weekhud)
-        weekhuds.append(f'{Fore.BLACK}Week {weeknum}{Fore.RESET}\n{weekhud}')
+        weekhuds.append(f'{Fore.BLACK}Week {weeknum}\n{weekhud}')
     print('\n\n'.join(weekhuds))
 
 
@@ -53,7 +53,7 @@ def week(num, stats, opt):
 def year():
     """Render the yearly HUD."""
     year = date.today().year
-    yearhud = [f'{p.name}\n{p.render_year(year)}' for p in PROJECTS.values()]
+    yearhud = [p.render_year(year) for p in PROJECTS.values()]
     yearhud = '\n\n'.join(yearhud)
     print(yearhud)
 

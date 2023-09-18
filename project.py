@@ -93,7 +93,7 @@ class Project:
 
     def render_week(self, day: date, show_stats: bool = False) -> str:
         """Create a mini contribution graph for the week containing the given day."""
-        dots, total = [], 0
+        dots, total, stats = [], 0, ''
         days_since_sunday = (day.weekday() + 1) % 7
         sunday = day - timedelta(days=days_since_sunday)
         for i in range(7):
@@ -102,8 +102,9 @@ class Project:
             val = self.get_day_val(day)
             dots.append(dot)
             total += val
-        stats = f'{Fore.BLACK}{total:0.0f}{self.metric[0]}{Fore.RESET}' if show_stats else ''
-        string = f"{' '.join(dots)}  {stats}"
+        if show_stats:
+            stats = f'{Fore.BLACK}{total:0.0f}{self.metric[0]}'
+        string = f'{Fore.WHITE}{self.name} {" ".join(dots)}  {stats}'
         return string
 
 
@@ -128,10 +129,11 @@ class Project:
                 daydots.append(daydot)
             weekdots.append(daydots)
 
-        # Regroup weekdots by day of week
+        # Regroup weekdots by day of week + add name
         daysof = [dayof for dayof in zip(*weekdots)]
         dots = '\n'.join([' '.join(dayof) for dayof in daysof])
-        return dots
+        string = f'{self.name}\n{dots}'
+        return string
 
 
     def render_all_years(self) -> str:
