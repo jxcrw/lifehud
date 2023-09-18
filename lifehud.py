@@ -47,9 +47,9 @@ def week(num, stats, opt):
         projects = {k: v for k, v in PROJECTS.items() if v.required}
     for i in range(num):
         day = today - timedelta(days=i * 7)
+        graphs = [p.render_week(day, stats) for p in projects.values()]
+        weekhud = '\n'.join(graphs)
         weeknum = day.strftime('%U')
-        weekhud = [p.render_week(day, stats) for p in projects.values()]
-        weekhud = '\n'.join(weekhud)
         weekhuds.append(f'{Fore.BLACK}Week {weeknum}\n{weekhud}')
     print('\n\n'.join(weekhuds))
 
@@ -58,8 +58,8 @@ def week(num, stats, opt):
 def year():
     """Render the yearly HUD."""
     year = date.today().year
-    yearhud = [p.render_year(year) for p in PROJECTS.values()]
-    yearhud = '\n\n'.join(yearhud)
+    graphs = [p.render_year(year) for p in PROJECTS.values()]
+    yearhud = '\n\n'.join(graphs)
     print(yearhud)
 
 
@@ -67,17 +67,17 @@ def year():
 @click.argument('name', nargs=1)
 def project(name):
     """Render all data for the given project (by year)."""
-    proj = PROJECTS[name]
-    all_years = proj.render_all_years()
-    print(all_years)
+    project = PROJECTS[name]
+    projhud = project.render_project()
+    print(projhud)
 
 
 @cli.command()
 @click.argument('name', nargs=1)
 def track(name):
     """Start/stop time tracking for the specified project."""
-    proj = PROJECTS[name]
-    proj.track()
+    project = PROJECTS[name]
+    project.track()
 
 
 if __name__ == '__main__':

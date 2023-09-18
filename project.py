@@ -5,7 +5,7 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 import subprocess
 
-from colorama import Back
+from colorama import Back, Style
 
 from _cfg.config import *
 from utils import toast, underline
@@ -31,8 +31,8 @@ class Project:
         self.delayed_start = delayed_start
         self.autoopen = autoopen
         self.weekmask = weekmask
-        self.required = len(weekmask) > 0
         self.today = today
+        self.required = len(weekmask) > 0
         self.path = DIR_SYNC / f'{name}.tsv'
         self.data = read_csv(self.path, sep=SEP, converters=CONVERTERS)
 
@@ -88,11 +88,11 @@ class Project:
             if score == SCORE_ZERO and day_of_week in self.weekmask:
                 dot = Back.BLACK + dot
         fore = SCORE2FORE[score]
-        return fore + dot + Fore.RESET + Back.RESET
+        return fore + dot + Style.RESET_ALL
 
 
     def render_week(self, day: date, show_stats: bool = False) -> str:
-        """Create a mini contribution graph for the week containing the given day."""
+        """Render contribution graph for the week containing the given day."""
         dots, total, stats = [], 0, ''
         days_since_sunday = (day.weekday() + 1) % 7
         sunday = day - timedelta(days=days_since_sunday)
@@ -103,13 +103,13 @@ class Project:
             dots.append(dot)
             total += val
         if show_stats:
-            stats = f'{Fore.BLACK}{total:0.0f}{self.metric[0]}'
-        string = f'{Fore.WHITE}{self.name} {" ".join(dots)}  {stats}'
-        return string
+            stats = Fore.BLACK + f'{total:0.0f}{self.metric[0]}'
+        graph = Fore.WHITE + f'{self.name} {" ".join(dots)}  {stats}'
+        return graph
 
 
-    def render_year(self, year: int) -> str:
-        """Create a full contribution graph for the given year."""
+    def render_year(self, year: int, show_year: bool = False) -> str:
+        """Render contribution graph for the given year."""
         # Build dict(weeknum → dict(daynum → date))
         soy = date(year, 1, 1)
         eoy = date(year, 12, 31)
@@ -121,27 +121,30 @@ class Project:
             day += timedelta(days=1)
 
         # Build dots for each day of each week
-        weekdots = []
+        dots_by_week = []
         for daynums in weeknums.values():
-            daydots = []
+            dots = []
             for daynum in range(7):
-                daydot = self.build_dot(daynums[daynum]) if daynum in daynums else ' '
-                daydots.append(daydot)
-            weekdots.append(daydots)
+                dot = self.build_dot(daynums[daynum]) if daynum in daynums else ' '
+                dots.append(dot)
+            dots_by_week.append(dots)
 
-        # Regroup weekdots by day of week + add name
-        daysof = [dayof for dayof in zip(*weekdots)]
-        dots = '\n'.join([' '.join(dayof) for dayof in daysof])
-        string = f'{self.name}\n{dots}'
-        return string
+        # Regroup dots by day of week
+        dots_by_dow = [_ for _ in zip(*dots_by_week)]
+        dots = '\n'.join([' '.join(_) for _ in dots_by_dow])
+
+        # Put everything together
+        year_label = f'-{year}' if show_year else ''
+        graph = f'{self.name}{year_label}\n{dots}'
+        return graph
 
 
-    def render_all_years(self) -> str:
-        """Create yearly contribution graphs for all project data."""
-        years = [date.year for date in self.data['date']]
-        years = sorted(set(years), reverse=True)
-        yearhuds = [f'{self.name}-{year}\n{self.render_year(year)}' for year in years]
-        return '\n\n'.join(yearhuds)
+    def render_project(self) -> str:
+        """Render all project data into yearly contribution graphs."""
+        years = sorted(set([date.year for date in self.data['date']]), reverse=True)
+        graphs = [self.render_year(year, show_year=True) for year in years]
+        projhud = '\n\n'.join(graphs)
+        return projhud
 
 
     def track(self) -> None:
