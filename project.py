@@ -78,7 +78,7 @@ class Project:
 
 
     def build_dot(self, day: date) -> str:
-        """Build a pretty contribution dot for the given day."""
+        """Build a pretty contribution dot for the specified day."""
         dot, score, day_of_week = DOT_STD, self.score_day(day), f'{day:%a}'
         if day == self.today:
             if self.is_wip():
@@ -92,7 +92,7 @@ class Project:
 
 
     def render_week(self, day: date, show_stats: bool = False) -> str:
-        """Render contribution graph for the week containing the given day."""
+        """Render contribution graph for the week containing the specified day."""
         dots, total, stats = [], 0, ''
         days_since_sunday = (day.weekday() + 1) % 7
         sunday = day - timedelta(days=days_since_sunday)
@@ -109,7 +109,7 @@ class Project:
 
 
     def render_year(self, year: int, show_year: bool = False) -> str:
-        """Render contribution graph for the given year."""
+        """Render contribution graph for the specified year."""
         # Build dict(weeknum → dict(daynum → date))
         soy = date(year, 1, 1)
         eoy = date(year, 12, 31)

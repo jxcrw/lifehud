@@ -33,7 +33,9 @@ class GroupInlineOrder(click.Group):
         return self.commands.keys()
 
 @click.group(cls=GroupInlineOrder)
-def cli(): pass
+def cli():
+    """Visualize progress on life projects in the form of contribution graphs."""
+    pass
 
 
 @cli.command()
@@ -41,7 +43,7 @@ def cli(): pass
 @click.option('--stats', '-s', is_flag=True, default=False, help="Show cumulative stats for week.")
 @click.option('--opt', '-o', is_flag=True, default=False, help="Show optional projects too.")
 def week(num, stats, opt):
-    """Render the weekly HUD."""
+    """Render a weekly lifehud."""
     weekhuds, today, projects = [], date.today(), PROJECTS
     if not opt:
         projects = {k: v for k, v in PROJECTS.items() if v.required}
@@ -56,7 +58,7 @@ def week(num, stats, opt):
 
 @cli.command()
 def year():
-    """Render the yearly HUD."""
+    """Render a yearly lifehud."""
     year = date.today().year
     graphs = [p.render_year(year) for p in PROJECTS.values()]
     yearhud = '\n\n'.join(graphs)
@@ -66,7 +68,7 @@ def year():
 @cli.command()
 @click.argument('name', nargs=1)
 def project(name):
-    """Render all data for the given project (by year)."""
+    """Render all data for the specified project (by year)."""
     project = PROJECTS[name]
     projhud = project.render_project()
     print(projhud)
