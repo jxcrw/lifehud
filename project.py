@@ -31,6 +31,7 @@ class Project:
         self.delayed_start = delayed_start
         self.autoopen = autoopen
         self.weekmask = weekmask
+        self.required = len(weekmask) > 0
         self.today = today
         self.path = DIR_SYNC / f'{name}.tsv'
         self.data = read_csv(self.path, sep=SEP, converters=CONVERTERS)

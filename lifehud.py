@@ -32,15 +32,18 @@ def cli(): pass
 
 
 @cli.command()
-@click.option('--num', '-n', default=1, help="The number of weeks to render, starting from the current week.")
+@click.option('--num', '-n', default=2, help="The number of weeks to render, starting from the current week.")
 @click.option('--stats', '-s', is_flag=True, default=False, help="Show cumulative stats for week.")
-def week(num, stats):
+@click.option('--opt', '-o', is_flag=True, default=False, help="Show optional projects too.")
+def week(num, stats, opt):
     """Render the weekly HUD."""
-    weekhuds, today = [], date.today()
+    weekhuds, today, projects = [], date.today(), PROJECTS
+    if not opt:
+        projects = {k: v for k, v in PROJECTS.items() if v.required}
     for i in range(num):
         day = today - timedelta(days=i * 7)
         weeknum = day.strftime('%U')
-        weekhud = [f'{p.name} {p.render_week(day, stats)}' for p in PROJECTS.values()]
+        weekhud = [f'{p.name} {p.render_week(day, stats)}' for p in projects.values()]
         weekhud = '\n'.join(weekhud)
         weekhuds.append(f'{Fore.BLACK}Week {weeknum}{Fore.RESET}\n{weekhud}')
     print('\n\n'.join(weekhuds))
