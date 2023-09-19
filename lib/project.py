@@ -37,6 +37,12 @@ class Project:
         self.data = read_csv(self.path, sep=SEP, converters=CONVERTERS)
 
 
+    def is_wip(self) -> bool:
+        """Get whether the project has a WIP entry."""
+        latest = self.data.iloc[0][self.metric]
+        return latest == WIP
+
+
     def get_day_val(self, day: date) -> float | str:
         """Get a cumulative, WIP-aware value for a day."""
         # Select rows corresponding to day
@@ -69,12 +75,6 @@ class Project:
         else:
             score = SCORE_ZERO
         return score
-
-
-    def is_wip(self) -> bool:
-        """Get whether the project has a WIP entry."""
-        latest = self.data.iloc[0][self.metric]
-        return latest == WIP
 
 
     def build_dot(self, day: date) -> str:
