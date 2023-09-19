@@ -161,8 +161,8 @@ class Project:
         n_days_max = n_days_max if n_days_max else n_days
         val_max = n_days_max * self.std_hi
 
-        day_stats = Fore.BLACK + f' days: {n_days}/{n_days_max} ({n_days / n_days_max:.0%})'
-        val_stats = Fore.BLACK + f' hour: {total:0.0f}/{val_max:0.0f} ({total/val_max:.0%})'
+        day_stats = Fore.BLACK + f' days: {n_days} ({n_days / n_days_max:.0%})'
+        val_stats = Fore.BLACK + f' hour: {total:0.0f} ({total/val_max:.0%})'
 
         stats = [day_stats, val_stats]
         return stats
