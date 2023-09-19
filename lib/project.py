@@ -108,7 +108,7 @@ class Project:
         return graph
 
 
-    def render_year(self, year: int, show_year: bool = False) -> str:
+    def render_year(self, year: int, show_stats: bool = False, show_year: bool = False) -> str:
         """Render contribution graph for the specified year."""
         # Build dict(weeknum → dict(daynum → date))
         soy = date(year, 1, 1)
@@ -120,31 +120,52 @@ class Project:
             weeknums[weeknum][daynum] = day
             day += timedelta(days=1)
 
-        # Build dots for each day of each week
-        dots_by_week = []
+        # Build info for each day of each week
+        dots_by_week, n_days, total = [], 0, 0
         for daynums in weeknums.values():
             dots = []
             for daynum in range(7):
                 dot = self.build_dot(daynums[daynum]) if daynum in daynums else ' '
+                val = self.get_day_val(daynums[daynum]) if daynum in daynums else 0
+                n_days += 1 if val else 0
+                total += val
                 dots.append(dot)
             dots_by_week.append(dots)
 
-        # Regroup dots by day of week
-        dots_by_dow = [_ for _ in zip(*dots_by_week)]
+        # Regroup dots by day of week + add stats
+        dots_by_dow = [list(_) for _ in zip(*dots_by_week)]
+        if show_stats:
+            stats = self.format_yearly_stats(year, n_days, total)
+            for i, stat in enumerate(stats):
+                dots_by_dow[i].append(stat)
         dots = '\n'.join([' '.join(_) for _ in dots_by_dow])
 
         # Put everything together
         year_label = f'-{year}' if show_year else ''
-        graph = f'{self.name}{year_label}\n{dots}'
+        graph = Fore.WHITE + f'{self.name}{year_label}\n{dots}'
         return graph
 
 
-    def render_project(self) -> str:
+    def render_project(self, show_stats: bool = False) -> str:
         """Render all project data into yearly contribution graphs."""
         years = sorted(set([date.year for date in self.data['date']]), reverse=True)
-        graphs = [self.render_year(year, show_year=True) for year in years]
+        graphs = [self.render_year(year, show_stats=show_stats, show_year=True) for year in years]
         projhud = '\n\n'.join(graphs)
         return projhud
+
+
+    def format_yearly_stats(self, year: int, n_days: int, total: float) -> list[str]:
+        """Format yearly stats into a list of pretty strings."""
+        n_weeks = SMART_WOY if year == datetime.now().year else 52
+        n_days_max = n_weeks * len(self.weekmask)
+        n_days_max = n_days_max if n_days_max else n_days
+        val_max = n_days_max * self.std_hi
+
+        day_stats = Fore.BLACK + f' days: {n_days}/{n_days_max} ({n_days / n_days_max:.0%})'
+        val_stats = Fore.BLACK + f' hour: {total:0.0f}/{val_max:0.0f} ({total/val_max:.0%})'
+
+        stats = [day_stats, val_stats]
+        return stats
 
 
     def track(self) -> None:

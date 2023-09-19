@@ -46,6 +46,8 @@ ROWCOL = ':2:28'
 SMART_TODAY_OWNER = 'mind'
 mind_data = read_csv(DIR_SYNC / f'{SMART_TODAY_OWNER}.tsv', sep='\t', converters=CONVERTERS)
 SMART_TODAY = mind_data.iloc[0]['date']
+SMART_DOY = int(SMART_TODAY.strftime('%j'))
+SMART_WOY = int(SMART_TODAY.strftime('%U'))
 
 WEEKMASK_ANY = set()
 WEEKMASK_ALL = {'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'}

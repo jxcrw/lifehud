@@ -39,20 +39,22 @@ def week(num, stats, opt):
 
 
 @cli.command()
-def year():
+@click.option('--stats', '-s', is_flag=True, default=False, help="Show cumulative stats for year.")
+def year(stats):
     """Render a yearly lifehud."""
     year = date.today().year
-    graphs = [p.render_year(year) for p in PROJECTS.values()]
+    graphs = [p.render_year(year, show_stats=stats) for p in PROJECTS.values()]
     yearhud = '\n\n'.join(graphs)
     print(yearhud)
 
 
 @cli.command()
 @click.argument('name', nargs=1)
-def project(name):
+@click.option('--stats', '-s', is_flag=True, default=False, help="Show cumulative stats for year.")
+def project(name, stats):
     """Render all data for the specified project (by year)."""
     project = PROJECTS[name]
-    projhud = project.render_project()
+    projhud = project.render_project(show_stats=stats)
     print(projhud)
 
 
@@ -66,6 +68,6 @@ def track(name):
 
 
 if __name__ == '__main__':
-    # command()
+    # command(['--my_arg', '42'])
     print()
     cli()
