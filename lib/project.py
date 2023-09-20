@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """A life project"""
 
-from collections import defaultdict
 from datetime import datetime, timedelta
 import subprocess
 
@@ -34,29 +33,29 @@ class Project:
         self.today = today
         self.required = len(weekmask) > 0
         self.path = DIR_SYNC / f'{name}.tsv'
-        self.data = read_csv(self.path, sep=SEP, converters=CONVERTERS)
+        self.data = load_data(self.path)
 
 
     def is_wip(self) -> bool:
         """Get whether the project has a WIP entry."""
-        latest = self.data.iloc[0][self.metric]
+        latest = get_latest_entry(self.data)[self.metric]
         return latest == WIP
 
 
     def get_day_val(self, day: date) -> float | str:
         """Get a cumulative, WIP-aware value for a day."""
-        # Select rows corresponding to day
+        # Select entries corresponding to day
         data, metric, day_val = self.data, self.metric, 0
-        rows = data.loc[data['date'] == day]
+        entries = data[day]
 
-        # Add sum of values for done rows
-        rows_done = rows.loc[rows[metric] != WIP]
-        day_val += rows_done[metric].sum()
+        # Add sum of values for done entries
+        vals_done = [e[metric] for e in entries if e[metric] != WIP]
+        day_val += sum(vals_done)
 
-        # Add value for wip row (if present)
-        rows_wip = rows.loc[rows[metric] == WIP]
-        if len(rows_wip) > 0:
-            start = datetime.combine(day, rows_wip.iloc[0]['start'])
+        # Add value for wip entry (if present)
+        entries_wip = [e for e in entries if e[metric] == WIP]
+        if len(entries_wip) > 0:
+            start = datetime.combine(day, entries_wip[0]['start'])
             now = datetime.now()
             day_val += (now - start).seconds / 3600
 
@@ -148,7 +147,7 @@ class Project:
 
     def render_project(self, show_stats: bool = False) -> str:
         """Render all project data into yearly contribution graphs."""
-        years = sorted(set([date.year for date in self.data['date']]), reverse=True)
+        years = sorted(set([date.year for date in self.data.keys()]), reverse=True)
         graphs = [self.render_year(year, show_stats=show_stats, show_year=True) for year in years]
         projhud = '\n\n'.join(graphs)
         return projhud
@@ -171,23 +170,23 @@ class Project:
     def track(self) -> None:
         """Start/stop time tracking for the project."""
         metric, data, now = self.metric, self.data, datetime.now()
-        latest = data.iloc[0]
+        latest = get_latest_entry(self.data)
         is_new = latest[metric] != WIP
         if is_new:
             date, hours, end = self.today, WIP, WIP_TIME
             if self.name == SMART_TODAY_OWNER:
                 date += timedelta(days=1)
             start = now + timedelta(minutes=self.delayed_start)
-            row = [date, hours, start, end, 'kthx', 'kthx']
-            data.loc[-1] = row
-            data.index = data.index + 1
-            data.sort_index(inplace=True)
+            vals = [date, hours, start, end]
+            keys = self.get_headers()
+            entry = {keys[i]: vals[i] for i in range(len(vals))}
+            data[date].insert(0, entry)
             toast(self.name, COLOR_FG)
         else:
             start = datetime.combine(latest['date'], latest['start'])
             hours = (now - start).seconds / 3600
-            data.loc[0, metric] = hours
-            data.loc[0, 'end'] = now
+            latest[metric] = hours
+            latest['end'] = now
             score = self.score_day(latest['date'])
             color = SCORE2COLOR[score]
             toast(f'{self.name} ({hours:0.2f}h)', color)
@@ -199,9 +198,17 @@ class Project:
 
     def save_to_disk(self) -> None:
         """Save the project to disk."""
-        data, path = self.data, self.path
-        format_times = lambda x: x.strftime(FMT_TIME)
-        data['start'] = data['start'].apply(format_times)
-        data['end'] = data['end'].apply(format_times)
-        data.to_csv(path, sep=SEP, index=False, float_format=FMT_FLOAT)
+        self.data = dict(sorted(self.data.items(), reverse=True))
+        buffer = [self.get_headers()]
+        for day in self.data:
+            for entry in self.data[day]:
+                vals = [FORMATTERS[key](entry[key]) for key in entry]
+                buffer.append(vals)
+        with open(self.path, 'w+', newline='\n', encoding='utf-8') as f:
+            f.write('\n'.join(['\t'.join(_) for _ in buffer]))
 
+
+    def get_headers(self) -> list[str]:
+        """Get a list of the headers to label a project data entry."""
+        headers = list(get_oldest_entry(self.data).keys())
+        return headers

@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """Settings"""
 
+from collections import defaultdict
 from datetime import date, time
 import os
 from pathlib import Path
 import sys
 
 from colorama import Fore
-from pandas import read_csv
 
 
 # Pathing
@@ -36,6 +36,19 @@ CONVERTERS = {
     'date': date.fromisoformat,
     'start': time.fromisoformat,
     'end': time.fromisoformat,
+    'hours': float,
+    'cals': int,
+    'note': str,
+    'revs': int,
+}
+FORMATTERS = {
+    'date': str,
+    'start': lambda x: x.strftime(FMT_TIME),
+    'end': lambda x: x.strftime(FMT_TIME),
+    'hours': lambda x: f'{x:0.2f}',
+    'cals': str,
+    'note': str,
+    'revs': str,
 }
 
 EDITOR = 'subl.exe'
@@ -43,9 +56,34 @@ ROWCOL = ':2:28'
 
 
 # Special date stuff
+def load_data(path: str) -> dict:
+    """Load project data up into a dict of labeled, typed objects."""
+    data = defaultdict(list)
+    with open(path, 'r', encoding='utf-8') as f:
+        raw = [line.strip().split(SEP) for line in f]
+        headers, entries = raw[0], raw[1:]
+    for entry in entries:
+        key = CONVERTERS[headers[0]](entry[0])
+        val = {headers[i]: CONVERTERS[headers[i]](entry[i]) for i in range(len(entry))}
+        data[key].append(val)
+    return data
+
+
+def get_latest_entry(data: dict) -> dict:
+    """Get the latest entry in a project dataset."""
+    latest = list(data.values())[0][0]
+    return latest
+
+
+def get_oldest_entry(data: dict) -> dict:
+    """Get the oldest entry in a project dataset."""
+    oldest = list(data.values())[-1][0]
+    return oldest
+
+
 SMART_TODAY_OWNER = 'mind'
-mind_data = read_csv(DIR_SYNC / f'{SMART_TODAY_OWNER}.tsv', sep='\t', converters=CONVERTERS)
-SMART_TODAY = mind_data.iloc[0]['date']
+SMART_TODAY_DATA = load_data(DIR_SYNC / f'{SMART_TODAY_OWNER}.tsv')
+SMART_TODAY = get_latest_entry(SMART_TODAY_DATA)['date']
 SMART_DOY = int(SMART_TODAY.strftime('%j'))
 SMART_WOY = int(SMART_TODAY.strftime('%U'))
 
