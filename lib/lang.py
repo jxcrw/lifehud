@@ -35,12 +35,12 @@ con.close()
 
 
 # Parse/format data
-data = [['date', 'hours', 'revs', 'start', 'end']]
+data = [['date', 'hours', 'start', 'end', 'revs']]
 for entry in reversed(raw):
     date = entry[0]
     revs = entry[1]
     hours = entry[2] / 1000 / 3600
-    data.append([date, f'{hours:0.2f}', str(revs), '00:00', '00:00'])
+    data.append([date, f'{hours:0.2f}', '00:00', '00:00', str(revs)])
 
 
 # Write data
