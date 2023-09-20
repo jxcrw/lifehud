@@ -21,7 +21,7 @@ def cli():
 
 
 @cli.command()
-@click.option('--num', '-n', default=2, help="The number of weeks to render, starting from the current week.")
+@click.option('--num', '-n', default=1, help="The number of weeks to render, starting from the current week.")
 @click.option('--stats', '-s', is_flag=True, default=False, help="Show cumulative stats for week.")
 @click.option('--opt', '-o', is_flag=True, default=False, help="Show optional projects too.")
 def week(num, stats, opt):
