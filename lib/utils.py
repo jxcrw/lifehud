@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Random utilities"""
+"""Misc utilities"""
+
+import subprocess
+import time
 
 from ahk import AHK
 
@@ -22,3 +25,22 @@ def toast(message: str, color: str) -> None:
         SplashImage, Off
     '''
     ahk.run_script(script)
+
+
+def sync_anki() -> None:
+    """Sync the Anki database by opening and closing Anki."""
+    subprocess.run(['anki.cmd'])
+    time.sleep(30)
+    ahk = AHK()
+    script = '''
+        winTitle := "ahk_exe anki.exe"
+        if WinExist(winTitle) {
+            WinClose
+        }
+    '''
+    ahk.run_script(script)
+    time.sleep(5)
+
+
+if __name__ == '__main__':
+    sync_anki()
