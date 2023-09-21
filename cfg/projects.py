@@ -14,3 +14,7 @@ PROJECTS = [
     Project('meet', 'hours', 0.1, 1.0, 00, True, WEEKMASK_ANY, SMART_TODAY),
 ]
 PROJECTS = {p.name: p for p in PROJECTS}
+
+
+PROJECTS_DAILY_ORDER = ['mind', 'lang', 'work', 'pool', 'body', 'meet']
+PROJECTS_DAILY_ORDER = {name: PROJECTS[name] for name in PROJECTS_DAILY_ORDER}

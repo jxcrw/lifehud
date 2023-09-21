@@ -6,7 +6,7 @@ from datetime import date, timedelta
 import click
 from colorama import Fore
 
-from cfg.projects import PROJECTS
+from cfg.projects import PROJECTS, PROJECTS_DAILY_ORDER
 
 
 class GroupInlineOrder(click.Group):
@@ -23,12 +23,15 @@ def cli():
 @cli.command()
 @click.option('--num', '-n', default=1, help="The number of weeks to render, starting from the current week.")
 @click.option('--stats', '-s', is_flag=True, default=False, help="Show cumulative stats for week.")
-@click.option('--opt', '-o', is_flag=True, default=False, help="Show optional projects too.")
-def week(num, stats, opt):
+@click.option('--optl', '-o', is_flag=True, default=False, help="Show optional projects too.")
+@click.option('--daily_order', '-d', is_flag=True, default=False, help="Show projects in daily order.")
+def week(num, stats, optl, daily_order):
     """Render a weekly lifehud."""
     weekhuds, today, projects = [], date.today(), PROJECTS
-    if not opt:
-        projects = {k: v for k, v in PROJECTS.items() if v.required}
+    if daily_order:
+        projects = PROJECTS_DAILY_ORDER
+    if not optl:
+        projects = {k: v for k, v in projects.items() if v.required}
     for i in range(num):
         day = today - timedelta(days=i*7)
         graphs = [p.render_week(day, stats) for p in projects.values()]
