@@ -46,7 +46,7 @@ class Project:
         """Get a cumulative, WIP-aware value for a day."""
         # Select entries corresponding to day
         data, metric, day_val = self.data, self.metric, 0
-        entries = data[day]
+        entries = data[day] if day in data else []
 
         # Add sum of values for done entries
         vals_done = [e[metric] for e in entries if e[metric] != WIP]
@@ -102,7 +102,8 @@ class Project:
             dots.append(dot)
             total += val
         if show_stats:
-            stats = Fore.BLACK + f'{total:0.0f}{self.metric[0]}'
+            chain_stats = self.get_chain_stats()
+            stats = Fore.BLACK + f'{total:0.0f}{self.metric[0]}  ({chain_stats})'
         graph = Fore.WHITE + f'{self.name} {" ".join(dots)}  {stats}'
         return graph
 
@@ -162,9 +163,54 @@ class Project:
 
         day_stats = Fore.BLACK + f' days: {n_days} ({n_days / n_days_max:.0%})'
         val_stats = Fore.BLACK + f' hour: {total:0.0f} ({total/val_max:.0%})'
+        chain_stats = Fore.BLACK + f' chain: {self.get_chain_stats()}'
 
-        stats = [day_stats, val_stats]
+        stats = [day_stats, val_stats, chain_stats]
         return stats
+
+
+    def get_chain_stats(self) -> str:
+        """Get current and max chain stats for the project."""
+        chain_curr = self.get_chain_current()
+        chain_max = self.get_chain_max()
+        if chain_curr == chain_max:
+            stats = f'{chain_curr}!'
+        else:
+            stats = f'{chain_curr}/{chain_max}'
+        return stats
+
+
+    def get_chain_current(self) -> int:
+        """Get the chain of successful days starting from the current day."""
+        chain, day = 0, SMART_TODAY
+        score = self.score_day(day)
+        while score >= SCORE_OKAY:
+            day -= timedelta(days=1)
+            score = self.score_day(day)
+            if score == SCORE_ZERO and f'{day:%a}' not in self.weekmask:
+                score = SCORE_OKAY
+                continue
+            chain += 1
+        return chain
+
+
+    def get_chain_max(self) -> int:
+        """Get the maximum chain of successful days ever recorded for the project."""
+        chain = chain_max = 0
+        day = get_oldest_entry(self.data)['date']
+        while day <= SMART_TODAY:
+            score = self.score_day(day)
+            if score == SCORE_ZERO and f'{day:%a}' not in self.weekmask:
+                day += timedelta(days=1)
+                continue
+            elif score >= SCORE_OKAY:
+                chain += 1
+            else:
+                chain_max = max(chain_max, chain)
+                chain = 0
+            day += timedelta(days=1)
+        chain_max = max(chain_max, chain)
+        return chain_max
 
 
     def track(self) -> None:
