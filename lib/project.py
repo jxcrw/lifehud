@@ -38,57 +38,9 @@ class Project:
 
 
     def is_wip(self) -> bool:
-        """Get whether the project has a WIP entry."""
+        """Get whether the project currently has a WIP entry."""
         latest = get_latest_entry(self.data)[self.metric]
         return latest == WIP
-
-
-    def get_day_val(self, day: date) -> float | str:
-        """Get a cumulative, WIP-aware value for a day."""
-        # Select entries corresponding to day
-        data, metric, day_val = self.data, self.metric, 0
-        entries = data[day] if day in data else []
-
-        # Add sum of values for done entries
-        vals_done = [e[metric] for e in entries if e[metric] != WIP]
-        day_val += sum(vals_done)
-
-        # Add value for wip entry (if present)
-        entries_wip = [e for e in entries if e[metric] == WIP]
-        if len(entries_wip) > 0:
-            start = datetime.combine(day, entries_wip[0]['start'])
-            now = datetime.now()
-            day_val += (now - start).seconds / 3600
-
-        return day_val
-
-
-    def score_day(self, day: date) -> float:
-        """Determine the contribution score for a day based on project's standards."""
-        val, std_lo, std_hi = self.get_day_val(day), self.std_lo, self.std_hi
-        if val >= std_hi:
-            score = SCORE_GOOD
-        elif val >= std_lo:
-            score = SCORE_OKAY
-        elif val > 0:
-            score = SCORE_BAD
-        else:
-            score = SCORE_ZERO
-        return score
-
-
-    def build_dot(self, day: date) -> str:
-        """Build a pretty contribution dot for the specified day."""
-        dot, score, day_of_week = DOT_STD, self.score_day(day), f'{day:%a}'
-        if day == self.today:
-            if self.is_wip():
-                dot = DOT_WIP
-            if score > SCORE_ZERO:
-                dot = underline(dot)
-            if score == SCORE_ZERO and day_of_week in self.weekmask:
-                dot = Back.BLACK + dot
-        fore = SCORE2FORE[score]
-        return fore + dot + Style.RESET_ALL
 
 
     def render_week(self, day: date, show_stats: bool = False) -> str:
@@ -102,7 +54,7 @@ class Project:
             dots.append(dot)
         if show_stats:
             period = Period(sunday, day)
-            chain_stats = self.get_chain_stats()
+            chain_stats = self.format_chain_stats()
             _, _, total = self.get_cumulative_stats(period)
             stats = Fore.BLACK + f'  {total:0.0f}{self.metric[0]}  ({chain_stats})'
             dots[-1] += stats
@@ -166,6 +118,69 @@ class Project:
         return projhud
 
 
+    def get_day_val(self, day: date) -> float | str:
+        """Get a cumulative, WIP-aware value for a day."""
+        # Select entries corresponding to day
+        data, metric, day_val = self.data, self.metric, 0
+        entries = data[day] if day in data else []
+
+        # Add sum of values for done entries
+        vals_done = [e[metric] for e in entries if e[metric] != WIP]
+        day_val += sum(vals_done)
+
+        # Add value for wip entry (if present)
+        entries_wip = [e for e in entries if e[metric] == WIP]
+        if len(entries_wip) > 0:
+            start = datetime.combine(day, entries_wip[0]['start'])
+            now = datetime.now()
+            day_val += (now - start).seconds / 3600
+
+        return day_val
+
+
+    def score_day(self, day: date) -> float:
+        """Determine the contribution score for a day based on project's standards."""
+        val, std_lo, std_hi = self.get_day_val(day), self.std_lo, self.std_hi
+        if val >= std_hi:
+            score = SCORE_GOOD
+        elif val >= std_lo:
+            score = SCORE_OKAY
+        elif val > 0:
+            score = SCORE_BAD
+        else:
+            score = SCORE_ZERO
+        return score
+
+
+    def build_dot(self, day: date) -> str:
+        """Build a pretty contribution dot for the specified day."""
+        dot, score, day_of_week = DOT_STD, self.score_day(day), f'{day:%a}'
+        if day == self.today:
+            if self.is_wip():
+                dot = DOT_WIP
+            if score > SCORE_ZERO:
+                dot = underline(dot)
+            if score == SCORE_ZERO and day_of_week in self.weekmask:
+                dot = Back.BLACK + dot
+        fore = SCORE2FORE[score]
+        return fore + dot + Style.RESET_ALL
+
+
+    def get_cumulative_stats(self, period: Period) -> tuple[int, float, int]:
+        """Get the cumulative number of days and total value for the given time period."""
+        years, n_days, total = set(), 0, 0
+
+        day = period.start
+        while day <= period.end:
+            val = self.get_day_val(day)
+            n_days += 1 if val else 0
+            total += val
+            years.add(day.year)
+            day += timedelta(days=1)
+
+        return years, n_days, total
+
+
     def format_cumulative_stats(self, period: Period, stats: tuple[int, float, int]) -> tuple:
         """Format cumulative stats into pretty strings."""
         # Unpack args
@@ -180,7 +195,7 @@ class Project:
         n_days_max = n_weeks * len(self.weekmask)
         n_days_max = n_days_max if n_days_max else n_days
         val_max = n_days_max * self.std_hi
-        chain = self.get_chain_stats()
+        chain = self.format_chain_stats()
 
         # Put it all together
         val_stat = Fore.BLACK + f'hour: {total:0.0f} ({total/val_max:.0%})'
@@ -190,7 +205,7 @@ class Project:
         return val_stat, day_stat, chain_stat, year_stat
 
 
-    def get_chain_stats(self) -> str:
+    def format_chain_stats(self) -> str:
         """Get current and max chain stats for the project."""
         chain_curr = self.get_chain_current()
         chain_max = self.get_chain_max()
@@ -232,21 +247,6 @@ class Project:
             day += timedelta(days=1)
         chain_max = max(chain_max, chain)
         return chain_max
-
-
-    def get_cumulative_stats(self, period: Period) -> tuple[int, float, int]:
-        """Get the cumulative number of days and total value for the given time period."""
-        years, n_days, total = set(), 0, 0
-
-        day = period.start
-        while day <= period.end:
-            val = self.get_day_val(day)
-            n_days += 1 if val else 0
-            total += val
-            years.add(day.year)
-            day += timedelta(days=1)
-
-        return years, n_days, total
 
 
     def track(self) -> None:
