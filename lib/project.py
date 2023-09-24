@@ -92,19 +92,19 @@ class Project:
 
     def render_week(self, day: date, show_stats: bool = False) -> str:
         """Render contribution graph for the week containing the specified day."""
-        dots, total, stats = [], 0, ''
+        dots = []
         days_since_sunday = (day.weekday() + 1) % 7
         sunday = day - timedelta(days=days_since_sunday)
         for i in range(7):
             day = sunday + timedelta(days=i)
             dot = self.build_dot(day)
-            val = self.get_day_val(day)
             dots.append(dot)
-            total += val
         if show_stats:
             chain_stats = self.get_chain_stats()
-            stats = Fore.BLACK + f'{total:0.0f}{self.metric[0]}  ({chain_stats})'
-        graph = Fore.WHITE + f'{self.name} {" ".join(dots)}  {stats}'
+            _, _, total = self.get_cumulative_stats((sunday, day))
+            stats = Fore.BLACK + f'  {total:0.0f}{self.metric[0]}  ({chain_stats})'
+            dots[-1] += stats
+        graph = Fore.WHITE + f'{self.name} {" ".join(dots)}'
         return graph
 
 
@@ -121,23 +121,33 @@ class Project:
             day += timedelta(days=1)
 
         # Build info for each day of each week
-        dots_by_week, n_days, total = [], 0, 0
+        dots_by_week = []
         for daynums in weeknums.values():
             dots = []
             for daynum in range(7):
                 dot = self.build_dot(daynums[daynum]) if daynum in daynums else ' '
-                val = self.get_day_val(daynums[daynum]) if daynum in daynums else 0
-                n_days += 1 if val else 0
-                total += val
                 dots.append(dot)
             dots_by_week.append(dots)
 
         # Regroup dots by day of week + add stats
         dots_by_dow = [list(_) for _ in zip(*dots_by_week)]
         if show_stats:
-            stats = self.format_yearly_stats(year, n_days, total)
+            end = SMART_TODAY if year == SMART_TODAY.year else eoy
+
+            # Stats for current year
+            period = (soy, end)
+            stats = self.get_cumulative_stats(period)
+            val_stat, day_stat, _, _ = self.format_cumulative_stats(period, stats)
+            stats = '   '.join([day_stat, val_stat])
+            dots_by_dow.append([stats])
+
+            # Cumulative stats for all time
+            period = (get_oldest_entry(self.data)['date'], end)
+            stats = self.get_cumulative_stats(period)
+            stats = self.format_cumulative_stats(period, stats)
             for i, stat in enumerate(stats):
-                dots_by_dow[i].append(stat)
+                dots_by_dow[i].append(f'  {stat}')
+
         dots = '\n'.join([' '.join(_) for _ in dots_by_dow])
 
         # Put everything together
@@ -154,19 +164,29 @@ class Project:
         return projhud
 
 
-    def format_yearly_stats(self, year: int, n_days: int, total: float) -> list[str]:
-        """Format yearly stats into a list of pretty strings."""
-        n_weeks = SMART_WOY if year == datetime.now().year else 52
+    def format_cumulative_stats(self, period: tuple[date, date], stats: tuple[int, float, int]) -> tuple:
+        """Format cumulative stats into pretty strings."""
+        # Unpack args
+        start, end = period
+        years, n_days, total = stats
+        n_years = len(years)
+
+        # Determine theoretic maxes and chains
+        n_weeks_curr = SMART_WOY if end.year == SMART_TODAY.year else 52
+        n_weeks_past = (n_years - 1) * 52
+        n_weeks = n_weeks_curr + n_weeks_past
+
         n_days_max = n_weeks * len(self.weekmask)
         n_days_max = n_days_max if n_days_max else n_days
         val_max = n_days_max * self.std_hi
+        chain = self.get_chain_stats()
 
-        day_stats = Fore.BLACK + f' days: {n_days} ({n_days / n_days_max:.0%})'
-        val_stats = Fore.BLACK + f' hour: {total:0.0f} ({total/val_max:.0%})'
-        chain_stats = Fore.BLACK + f' chain: {self.get_chain_stats()}'
-
-        stats = [day_stats, val_stats, chain_stats]
-        return stats
+        # Put it all together
+        val_stat = Fore.BLACK + f'hour: {total:0.0f} ({total/val_max:.0%})'
+        day_stat = Fore.BLACK + f'days: {n_days} ({n_days / n_days_max:.0%})'
+        chain_stat = Fore.BLACK + f'chæn: {chain}'
+        year_stat = Fore.BLACK + f'year: {n_years}'
+        return val_stat, day_stat, chain_stat, year_stat
 
 
     def get_chain_stats(self) -> str:
@@ -182,9 +202,9 @@ class Project:
 
     def get_chain_current(self) -> int:
         """Get the chain of successful days starting from the current day."""
-        chain, day = 0, SMART_TODAY
+        chain, day, oldest_day = 0, SMART_TODAY, get_oldest_entry(self.data)['date']
         score = self.score_day(day)
-        while score >= SCORE_OKAY:
+        while score >= SCORE_OKAY and day >= oldest_day:
             day -= timedelta(days=1)
             score = self.score_day(day)
             if score == SCORE_ZERO and f'{day:%a}' not in self.weekmask:
@@ -211,6 +231,22 @@ class Project:
             day += timedelta(days=1)
         chain_max = max(chain_max, chain)
         return chain_max
+
+
+    def get_cumulative_stats(self, period: tuple[date, date]) -> tuple[int, float, int]:
+        """Get the cumulative number of days and total value for the given time period."""
+        years, n_days, total = set(), 0, 0
+        start, end = period
+
+        day = start
+        while day <= end:
+            val = self.get_day_val(day)
+            n_days += 1 if val else 0
+            total += val
+            years.add(day.year)
+            day += timedelta(days=1)
+
+        return years, n_days, total
 
 
     def track(self) -> None:

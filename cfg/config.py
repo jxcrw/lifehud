@@ -28,7 +28,7 @@ SCORE_ZERO = 0
 
 # Data formatting
 SEP = '\t'
-WIP = 0.00
+WIP = -1
 WIP_TIME = time(hour=0, minute=0)
 FMT_TIME = '%H:%M'
 FMT_FLOAT = '%.2f'
