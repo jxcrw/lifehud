@@ -7,6 +7,7 @@ import subprocess
 from colorama import Back, Style
 
 from cfg.config import *
+from lib.period import Period
 from lib.utils import toast, underline
 
 
@@ -100,8 +101,9 @@ class Project:
             dot = self.build_dot(day)
             dots.append(dot)
         if show_stats:
+            period = Period(sunday, day)
             chain_stats = self.get_chain_stats()
-            _, _, total = self.get_cumulative_stats((sunday, day))
+            _, _, total = self.get_cumulative_stats(period)
             stats = Fore.BLACK + f'  {total:0.0f}{self.metric[0]}  ({chain_stats})'
             dots[-1] += stats
         graph = Fore.WHITE + f'{self.name} {" ".join(dots)}'
@@ -135,14 +137,14 @@ class Project:
             end = SMART_TODAY if year == SMART_TODAY.year else eoy
 
             # Stats for current year
-            period = (soy, end)
+            period = Period(soy, end)
             stats = self.get_cumulative_stats(period)
             val_stat, day_stat, _, _ = self.format_cumulative_stats(period, stats)
             stats = '   '.join([day_stat, val_stat])
             dots_by_dow.append([stats])
 
             # Cumulative stats for all time
-            period = (get_oldest_entry(self.data)['date'], end)
+            period = Period(get_oldest_entry(self.data)['date'], end)
             stats = self.get_cumulative_stats(period)
             stats = self.format_cumulative_stats(period, stats)
             for i, stat in enumerate(stats):
@@ -164,15 +166,14 @@ class Project:
         return projhud
 
 
-    def format_cumulative_stats(self, period: tuple[date, date], stats: tuple[int, float, int]) -> tuple:
+    def format_cumulative_stats(self, period: Period, stats: tuple[int, float, int]) -> tuple:
         """Format cumulative stats into pretty strings."""
         # Unpack args
-        start, end = period
         years, n_days, total = stats
         n_years = len(years)
 
         # Determine theoretic maxes and chains
-        n_weeks_curr = SMART_WOY if end.year == SMART_TODAY.year else 52
+        n_weeks_curr = SMART_WOY if period.end.year == SMART_TODAY.year else 52
         n_weeks_past = (n_years - 1) * 52
         n_weeks = n_weeks_curr + n_weeks_past
 
@@ -233,13 +234,12 @@ class Project:
         return chain_max
 
 
-    def get_cumulative_stats(self, period: tuple[date, date]) -> tuple[int, float, int]:
+    def get_cumulative_stats(self, period: Period) -> tuple[int, float, int]:
         """Get the cumulative number of days and total value for the given time period."""
         years, n_days, total = set(), 0, 0
-        start, end = period
 
-        day = start
-        while day <= end:
+        day = period.start
+        while day <= period.end:
             val = self.get_day_val(day)
             n_days += 1 if val else 0
             total += val
