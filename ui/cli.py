@@ -6,38 +6,34 @@ from datetime import date, timedelta
 import click
 from colorama import Fore
 
-from cfg.projects import PROJECTS, PROJECTS_DAILY_ORDER
+from cfg.projdefs import PROJECTS, PROJECTS_DAILY_ORDER
+from lib.wrappers import ClickGroupInlineOrder
 
 
-class GroupInlineOrder(click.Group):
-    """Keep commands in the order they are defined in code in the help page."""
-    def list_commands(self, ctx):
-        return self.commands.keys()
-
-@click.group(cls=GroupInlineOrder)
+@click.group(cls=ClickGroupInlineOrder)
 def cli():
     """Visualize progress on life projects in the form of contribution graphs."""
     pass
 
 
 @cli.command()
-@click.option('--num', '-n', default=1, help="The number of weeks to render, starting from the current week.")
+@click.option('--num', '-n', default=1, help="How many weeks to render (starting from current week).")
 @click.option('--stats', '-s', is_flag=True, default=False, help="Show cumulative stats.")
-@click.option('--optl', '-o', is_flag=True, default=False, help="Show optional projects too.")
+@click.option('--optl', '-o', is_flag=True, default=False, help="Show optional projects.")
 @click.option('--daily_order', '-d', is_flag=True, default=False, help="Show projects in daily order.")
 def week(num, stats, optl, daily_order):
     """Render a weekly lifehud."""
-    weekhuds, today, projects = [], date.today(), PROJECTS
+    weekhuds, projs = [], PROJECTS
     if daily_order:
-        projects = PROJECTS_DAILY_ORDER
+        projs = PROJECTS_DAILY_ORDER
     if not optl:
-        projects = {k: v for k, v in projects.items() if v.required}
+        projs = {k: p for k, p in projs.items() if p.required}
+
     for i in range(num):
-        day = today - timedelta(days=i*7)
-        graphs = [p.render_week(day, stats) for p in projects.values()]
-        weekhud = '\n'.join(graphs)
-        weeknum = day.strftime('%U')
-        weekhuds.append(f'{Fore.BLACK}Week {weeknum}\n{weekhud}')
+        day = date.today() - timedelta(days=i*7)
+        graphs = '\n'.join([p.render_week(day, show_stats=stats) for p in projs.values()])
+        weekhud = f'{Fore.BLACK}Week {day:%U}\n{graphs}'
+        weekhuds.append(weekhud)
     print('\n\n'.join(weekhuds))
 
 
@@ -56,8 +52,8 @@ def year(stats):
 @click.option('--stats', '-s', is_flag=True, default=False, help="Show cumulative stats.")
 def project(name, stats):
     """Render all data for the specified project (by year)."""
-    project = PROJECTS[name]
-    projhud = project.render_project(show_stats=stats)
+    p = PROJECTS[name]
+    projhud = p.render_project(show_stats=stats)
     print(projhud)
 
 
@@ -65,9 +61,8 @@ def project(name, stats):
 @click.argument('name', nargs=1)
 def track(name):
     """Start/stop time tracking for the specified project."""
-    project = PROJECTS[name]
-    project.track()
-
+    p = PROJECTS[name]
+    p.track()
 
 
 if __name__ == '__main__':

@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Get study data from Anki"""
+"""Get study data from Anki database"""
 
 import os
 from pathlib import Path
 import shutil
 import sqlite3
 
-from cfg.config import DIR_DATA, DIR_SCOOP, DIR_SYNC
+from cfg.config import DIR_DATA, DIR_SCOOP, DIR_SYNC, FMTR_FLOAT
 
 
 # Setup
@@ -17,9 +17,6 @@ shutil.copy(FILE_ORIG, FILE_WORK)
 
 
 # Extract data
-con = sqlite3.connect(FILE_WORK)
-c = con.cursor()
-
 query = """
 SELECT
     DATE(STRFTIME('%s', DATETIME(((id/1000)+strftime('%s', '1970-01-01')), 'unixepoch', 'localtime')), 'unixepoch') AS "date",
@@ -30,22 +27,24 @@ GROUP BY date
 ORDER BY date
 """
 
-raw = c.execute(query).fetchall()
+con = sqlite3.connect(FILE_WORK)
+cur = con.cursor()
+raw = cur.execute(query).fetchall()
 con.close()
 
 
 # Parse/format data
-data = [['date', 'hours', 'start', 'end', 'revs']]
+data = [['date', 'hours', 'revs']]
 for entry in reversed(raw):
     date = entry[0]
     revs = entry[1]
     hours = entry[2] / 1000 / 3600
-    data.append([date, f'{hours:0.2f}', '00:00', '00:00', str(revs)])
+    data.append([date, FMTR_FLOAT(hours), str(revs)])
 
 
 # Write data
 with open(FILE, 'w+', newline='\n', encoding='utf-8') as f:
-    f.write('\n'.join(['\t'.join(entry) for entry in data]))
+    f.write('\n'.join(['\t'.join(_) for _ in data]))
 
 
 # Clean up

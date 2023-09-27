@@ -2,45 +2,30 @@
 """Misc utilities"""
 
 import subprocess
-import time
 
 from ahk import AHK
 
-from cfg.config import COLOR_BG
+from cfg.config import DURATION_MS, EDITOR, FONT, FONT_SIZE, HEX_BG, ROWCOL
 
 
 def underline(string: str) -> str:
-    """Underline given string for display in terminal."""
+    """Underline the specified string for display in terminal."""
     string = "\033[4m" + string + "\033[0m"
     return string
 
 
-def toast(message: str, color: str) -> None:
+def toast(message: str, hex_color: str) -> None:
     """Display a toast message."""
     ahk = AHK()
     script = f'''
-        SplashImage,, B1 FS12 CW{COLOR_BG} CT{color}, {message},,, Consolas
-        Sleep, 3000
+        SplashImage,, B1 FS{FONT_SIZE} CW{HEX_BG} CT{hex_color}, {message},,, {FONT}
+        Sleep, {DURATION_MS}
         SplashImage
         SplashImage, Off
     '''
     ahk.run_script(script)
 
 
-def sync_anki() -> None:
-    """Sync the Anki database by opening and closing Anki."""
-    subprocess.run(['anki.cmd'])
-    time.sleep(30)
-    ahk = AHK()
-    script = '''
-        winTitle := "ahk_exe anki.exe"
-        if WinExist(winTitle) {
-            WinClose
-        }
-    '''
-    ahk.run_script(script)
-    time.sleep(5)
-
-
-if __name__ == '__main__':
-    sync_anki()
+def autoopen(path: str) -> None:
+    """Open the specified path in the configured text editor."""
+    subprocess.run([EDITOR, f'{path}{ROWCOL}'])

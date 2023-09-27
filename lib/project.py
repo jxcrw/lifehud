@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 """A life project"""
 
+from collections import defaultdict
 from datetime import datetime, timedelta
-import subprocess
 
 from colorama import Back, Style
 
 from cfg.config import *
-from lib.wrappers import Chain, Period, Standard
+from cfg.today import SMART_TODAY, SMART_TODAY_OWNER
 from lib.stats import Stats
-from lib.utils import toast, underline
+from lib.utils import autoopen, toast, underline
+from lib.wrappers import Chain, Period, Standard
 
 
 class Project:
@@ -17,29 +18,19 @@ class Project:
 
     def __init__(self,
                  name: str,
-                 metric: str,
                  standard: Standard,
                  delayed_start: int,
                  autoopen: bool,
                  weekmask: str,
-                 today: date,
                  ):
         self.name = name
-        self.metric = metric
         self.standard = standard
         self.delayed_start = delayed_start
         self.autoopen = autoopen
         self.weekmask = weekmask
-        self.today = today
         self.required = len(weekmask) > 0
         self.path = DIR_SYNC / f'{name}.tsv'
-        self.data = load_data(self.path)
-
-
-    def is_wip(self) -> bool:
-        """Get whether the project currently has a WIP entry."""
-        latest = get_latest_entry(self.data)[self.metric]
-        return latest == WIP
+        self.data = self.read_data()
 
 
     def render_week(self, day: date, show_stats: bool = False) -> str:
@@ -52,8 +43,9 @@ class Project:
             dot = self.build_dot(day)
             dots.append(dot)
         if show_stats:
-            period = Period(sunday, day)
-            stats = self.calc_stats(period)
+            saturday = day
+            period = Period(sunday, saturday)
+            stats = Stats(self, period)
             dots[-1] += stats.format_weekly()
         graph = Fore.WHITE + f'{self.name} {" ".join(dots)}'
         return graph
@@ -86,13 +78,13 @@ class Project:
             end = SMART_TODAY if year == SMART_TODAY.year else eoy
 
             # Stats for current year
-            prd = Period(soy, end)
-            stats = self.calc_stats(prd)
+            period = Period(soy, end)
+            stats = Stats(self, period)
             dots_by_dow.append([stats.format_yearly()])
 
             # Cumulative stats for all time
-            prd_all = Period(get_oldest_entry(self.data)['date'], end)
-            stats = self.calc_stats(prd_all)
+            period_all = Period(self.get_oldest_entry()['date'], end)
+            stats = Stats(self, period_all)
             stats = stats.format_cumulatively()
             for i, stat in enumerate(stats):
                 dots_by_dow[i].append(f'  {stat}')
@@ -106,36 +98,32 @@ class Project:
 
 
     def render_project(self, show_stats: bool = False) -> str:
-        """Render all project data into yearly contribution graphs."""
+        """Render all project data as yearly contribution graphs."""
         years = sorted(set([date.year for date in self.data.keys()]), reverse=True)
         graphs = [self.render_year(year, show_stats=show_stats, show_year=True) for year in years]
         projhud = '\n\n'.join(graphs)
         return projhud
 
 
-    def get_day_val(self, day: date) -> float | str:
-        """Get a cumulative, WIP-aware value for a day."""
-        # Select entries corresponding to day
-        data, metric, day_val = self.data, self.metric, 0
-        entries = data[day] if day in data else []
-
-        # Add sum of values for done entries
-        vals_done = [e[metric] for e in entries if e[metric] != WIP]
-        day_val += sum(vals_done)
-
-        # Add value for wip entry (if present)
-        entries_wip = [e for e in entries if e[metric] == WIP]
-        if len(entries_wip) > 0:
-            start = datetime.combine(day, entries_wip[0]['start'])
-            now = datetime.now()
-            day_val += (now - start).seconds / 3600
-
-        return day_val
+    def build_dot(self, day: date) -> str:
+        """Build a pretty contribution dot for the specified day."""
+        dot, score = DOT_STD, self.score_day(day)
+        is_req_day = f'{day:%a}' in self.weekmask
+        if day == SMART_TODAY:
+            if self.is_wip():
+                dot = DOT_WIP
+            if score > SCORE_ZERO:
+                dot = underline(dot)
+            if score == SCORE_ZERO and is_req_day:
+                dot = Back.BLACK + dot
+        fore = SCORE2FORE[score]
+        dot = fore + dot + Style.RESET_ALL
+        return dot
 
 
     def score_day(self, day: date) -> float:
         """Determine the contribution score for a day based on project's standards."""
-        val, std = self.get_day_val(day), self.standard
+        val, std = self.get_contribution_val(day), self.standard
         if val >= std.hi:
             score = SCORE_GOOD
         elif val >= std.lo:
@@ -147,66 +135,28 @@ class Project:
         return score
 
 
-    def build_dot(self, day: date) -> str:
-        """Build a pretty contribution dot for the specified day."""
-        dot, score, day_of_week = DOT_STD, self.score_day(day), f'{day:%a}'
-        if day == self.today:
-            if self.is_wip():
-                dot = DOT_WIP
-            if score > SCORE_ZERO:
-                dot = underline(dot)
-            if score == SCORE_ZERO and day_of_week in self.weekmask:
-                dot = Back.BLACK + dot
-        fore = SCORE2FORE[score]
-        return fore + dot + Style.RESET_ALL
-
-
-    def calc_stats(self, period: Period) -> Stats:
-        """Get comprehensive project stats for the given time period."""
-        years, n_days, n_hours = set(), 0, 0
-        day = period.start
-        while day <= period.end:
-            hours = self.get_day_val(day)
-            n_days += 1 if hours else 0
-            n_hours += hours
-            years.add(day.year)
-            day += timedelta(days=1)
-
-        chain = self.calc_chain(period)
-        stats = Stats(period, self.standard, self.weekmask, n_hours, n_days, chain, years)
-        return stats
-
-
-    def calc_chain(self, period: Period) -> Chain:
-        """Get the chain of successful days recorded for the specified period."""
-        chain = chain_curr = chain_max = 0
-        day = period.end
-        while day >= period.start:
-            score = self.score_day(day)
-            is_zero = (score == SCORE_ZERO)
-            is_req = f'{day:%a}' in self.weekmask
-            if is_zero and is_req:
-                chain_curr = chain
-            elif is_zero and not is_req:
-                day -= timedelta(days=1)
-                continue
-            elif score >= SCORE_OKAY:
-                chain += 1
+    def get_contribution_val(self, day: date) -> float | str:
+        """Get a cumulative, WIP-aware contribution value for the specified day."""
+        val = 0
+        entries = self.data[day] if day in self.data else []
+        for e in entries:
+            is_done = e[METRIC] != WIP_VAL
+            if is_done:
+                val += e[METRIC]
             else:
-                chain_max = max(chain_max, chain)
-                chain = 0
-            day -= timedelta(days=1)
-        chain = Chain(chain_curr, chain_max)
-        return chain
+                start = datetime.combine(day, e['start'])
+                now = datetime.now()
+                val += (now - start).seconds / 3600
+        return val
 
 
     def track(self) -> None:
         """Start/stop time tracking for the project."""
-        metric, data, now = self.metric, self.data, datetime.now()
-        latest = get_latest_entry(self.data)
-        is_new = latest[metric] != WIP
+        data, now = self.data, datetime.now()
+        newest = self.get_newest_entry()
+        is_new = newest[METRIC] != WIP_VAL
         if is_new:
-            date, hours, end = self.today, WIP, WIP_TIME
+            date, hours, end = SMART_TODAY, WIP_VAL, WIP_TIME
             if self.name == SMART_TODAY_OWNER:
                 date += timedelta(days=1)
             start = now + timedelta(minutes=self.delayed_start)
@@ -214,34 +164,65 @@ class Project:
             keys = self.get_headers()
             entry = {keys[i]: vals[i] for i in range(len(vals))}
             data[date].insert(0, entry)
-            toast(self.name, COLOR_FG)
+            toast(self.name, HEX_FG)
         else:
-            start = datetime.combine(latest['date'], latest['start'])
+            start = datetime.combine(newest['date'], newest['start'])
             hours = (now - start).seconds / 3600
-            latest[metric] = hours
-            latest['end'] = now
-            score = self.score_day(latest['date'])
-            color = SCORE2COLOR[score]
+            newest[METRIC] = hours
+            newest['end'] = now
+            score = self.score_day(newest['date'])
+            color = SCORE2HEX[score]
             toast(f'{self.name} ({hours:0.2f}h)', color)
 
-        self.save_to_disk()
+        self.write_data()
         if self.autoopen and not is_new:
-            subprocess.run([EDITOR, f'{self.path}{ROWCOL}'])
+            autoopen()
 
 
-    def save_to_disk(self) -> None:
-        """Save the project to disk."""
-        self.data = dict(sorted(self.data.items(), reverse=True))
+    def read_data(self) -> dict:
+        """Load project data up into a dict of labeled, typed objects."""
+        data = defaultdict(list)
+        with open(self.path, 'r', encoding='utf-8') as f:
+            raw = [line.strip().split(SEP) for line in f]
+            headers, entries = raw[0], raw[1:]
+        for entry in entries:
+            key = HANDLERS[headers[0]].converter(entry[0])
+            val = {headers[i]: HANDLERS[headers[i]].converter(entry[i]) for i in range(len(entry))}
+            data[key].append(val)
+        return data
+
+
+    def write_data(self) -> None:
+        """Write project data to disk with sensible string formatting."""
+        data = dict(sorted(self.data.items(), reverse=True))
         buffer = [self.get_headers()]
-        for day in self.data:
-            for entry in self.data[day]:
-                vals = [FORMATTERS[key](entry[key]) for key in entry]
+        for day in data:
+            for entry in data[day]:
+                vals = [HANDLERS[key].formatter(entry[key]) for key in entry]
                 buffer.append(vals)
         with open(self.path, 'w+', newline='\n', encoding='utf-8') as f:
             f.write('\n'.join(['\t'.join(_) for _ in buffer]))
 
 
+    def is_wip(self) -> bool:
+        """Get whether the project currently has a WIP entry."""
+        newest_val = self.get_newest_entry()[METRIC]
+        return newest_val == WIP_VAL
+
+
+    def get_newest_entry(self) -> dict:
+        """Get the newest entry in a project dataset."""
+        latest = list(self.data.values())[0][0]
+        return latest
+
+
+    def get_oldest_entry(self) -> dict:
+        """Get the oldest entry in a project dataset."""
+        oldest = list(self.data.values())[-1][0]
+        return oldest
+
+
     def get_headers(self) -> list[str]:
         """Get a list of the headers to label a project data entry."""
-        headers = list(get_oldest_entry(self.data).keys())
+        headers = list(self.get_oldest_entry().keys())
         return headers
