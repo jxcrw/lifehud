@@ -22,7 +22,7 @@ def cli():
 
 @cli.command()
 @click.option('--num', '-n', default=1, help="The number of weeks to render, starting from the current week.")
-@click.option('--stats', '-s', is_flag=True, default=False, help="Show cumulative stats for week.")
+@click.option('--stats', '-s', is_flag=True, default=False, help="Show cumulative stats.")
 @click.option('--optl', '-o', is_flag=True, default=False, help="Show optional projects too.")
 @click.option('--daily_order', '-d', is_flag=True, default=False, help="Show projects in daily order.")
 def week(num, stats, optl, daily_order):
@@ -42,7 +42,7 @@ def week(num, stats, optl, daily_order):
 
 
 @cli.command()
-@click.option('--stats', '-s', is_flag=True, default=False, help="Show cumulative stats for year.")
+@click.option('--stats', '-s', is_flag=True, default=False, help="Show cumulative stats.")
 def year(stats):
     """Render a yearly lifehud."""
     year = date.today().year
@@ -53,7 +53,7 @@ def year(stats):
 
 @cli.command()
 @click.argument('name', nargs=1)
-@click.option('--stats', '-s', is_flag=True, default=False, help="Show cumulative stats for year.")
+@click.option('--stats', '-s', is_flag=True, default=False, help="Show cumulative stats.")
 def project(name, stats):
     """Render all data for the specified project (by year)."""
     project = PROJECTS[name]
