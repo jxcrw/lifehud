@@ -3,15 +3,16 @@
 
 from cfg.config import SMART_TODAY, WEEKMASK_ALL, WEEKMASK_ANY, WEEKMASK_SIX
 from lib.project import Project
+from lib.standard import Standard as Std
 
 
 PROJECTS = [
-    Project('mind', 'hours', 6.9, 7.9, 25, False, WEEKMASK_ALL, SMART_TODAY),
-    Project('body', 'hours', 0.9, 1.5, 20, True, WEEKMASK_SIX, SMART_TODAY),
-    Project('pool', 'hours', 0.9, 1.9, 00, True, WEEKMASK_ALL, SMART_TODAY),
-    Project('lang', 'hours', 0.2, 0.4, 00, False, WEEKMASK_ALL, SMART_TODAY),
-    Project('work', 'hours', 2.0, 4.0, 00, True, WEEKMASK_ALL, SMART_TODAY),
-    Project('meet', 'hours', 0.1, 1.0, 00, True, WEEKMASK_ANY, SMART_TODAY),
+    Project('mind', 'hours', Std(6.9, 7.9), 25, False, WEEKMASK_ALL, SMART_TODAY),
+    Project('body', 'hours', Std(0.9, 1.5), 20, True, WEEKMASK_SIX, SMART_TODAY),
+    Project('pool', 'hours', Std(0.9, 1.9), 00, True, WEEKMASK_ALL, SMART_TODAY),
+    Project('lang', 'hours', Std(0.2, 0.4), 00, False, WEEKMASK_ALL, SMART_TODAY),
+    Project('work', 'hours', Std(2.0, 4.0), 00, True, WEEKMASK_ALL, SMART_TODAY),
+    Project('meet', 'hours', Std(0.1, 1.0), 00, True, WEEKMASK_ANY, SMART_TODAY),
 ]
 PROJECTS = {p.name: p for p in PROJECTS}
 

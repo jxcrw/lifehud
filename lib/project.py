@@ -8,6 +8,7 @@ from colorama import Back, Style
 
 from cfg.config import *
 from lib.period import Period
+from lib.standard import Standard
 from lib.utils import toast, underline
 
 
@@ -17,8 +18,7 @@ class Project:
     def __init__(self,
                  name: str,
                  metric: str,
-                 std_lo: float,
-                 std_hi: float,
+                 standard: Standard,
                  delayed_start: int,
                  autoopen: bool,
                  weekmask: str,
@@ -26,8 +26,7 @@ class Project:
                  ):
         self.name = name
         self.metric = metric
-        self.std_lo = std_lo
-        self.std_hi = std_hi
+        self.standard = standard
         self.delayed_start = delayed_start
         self.autoopen = autoopen
         self.weekmask = weekmask
@@ -140,10 +139,10 @@ class Project:
 
     def score_day(self, day: date) -> float:
         """Determine the contribution score for a day based on project's standards."""
-        val, std_lo, std_hi = self.get_day_val(day), self.std_lo, self.std_hi
-        if val >= std_hi:
+        val, std = self.get_day_val(day), self.standard
+        if val >= std.hi:
             score = SCORE_GOOD
-        elif val >= std_lo:
+        elif val >= std.lo:
             score = SCORE_OKAY
         elif val > 0:
             score = SCORE_BAD
@@ -194,7 +193,7 @@ class Project:
 
         n_days_max = n_weeks * len(self.weekmask)
         n_days_max = n_days_max if n_days_max else n_days
-        val_max = n_days_max * self.std_hi
+        val_max = n_days_max * self.standard.hi
         chain = self.format_chain_stats()
 
         # Put it all together
