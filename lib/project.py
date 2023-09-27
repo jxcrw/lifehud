@@ -7,8 +7,10 @@ import subprocess
 from colorama import Back, Style
 
 from cfg.config import *
+from lib.chain import Chain
 from lib.period import Period
 from lib.standard import Standard
+from lib.stats import Stats
 from lib.utils import toast, underline
 
 
@@ -53,10 +55,8 @@ class Project:
             dots.append(dot)
         if show_stats:
             period = Period(sunday, day)
-            chain_stats = self.format_chain_stats()
-            _, _, total = self.get_cumulative_stats(period)
-            stats = Fore.BLACK + f'  {total:0.0f}{self.metric[0]}  ({chain_stats})'
-            dots[-1] += stats
+            stats = self.calc_stats(period)
+            dots[-1] += stats.format_weekly()
         graph = Fore.WHITE + f'{self.name} {" ".join(dots)}'
         return graph
 
@@ -88,16 +88,14 @@ class Project:
             end = SMART_TODAY if year == SMART_TODAY.year else eoy
 
             # Stats for current year
-            period = Period(soy, end)
-            stats = self.get_cumulative_stats(period)
-            val_stat, day_stat, _, _ = self.format_cumulative_stats(period, stats)
-            stats = '   '.join([day_stat, val_stat])
-            dots_by_dow.append([stats])
+            prd = Period(soy, end)
+            stats = self.calc_stats(prd)
+            dots_by_dow.append([stats.format_yearly()])
 
             # Cumulative stats for all time
-            period = Period(get_oldest_entry(self.data)['date'], end)
-            stats = self.get_cumulative_stats(period)
-            stats = self.format_cumulative_stats(period, stats)
+            prd_all = Period(get_oldest_entry(self.data)['date'], end)
+            stats = self.calc_stats(prd_all)
+            stats = stats.format_cumulatively()
             for i, stat in enumerate(stats):
                 dots_by_dow[i].append(f'  {stat}')
 
@@ -165,87 +163,43 @@ class Project:
         return fore + dot + Style.RESET_ALL
 
 
-    def get_cumulative_stats(self, period: Period) -> tuple[int, float, int]:
-        """Get the cumulative number of days and total value for the given time period."""
-        years, n_days, total = set(), 0, 0
-
+    def calc_stats(self, period: Period) -> Stats:
+        """Get comprehensive project stats for the given time period."""
+        years, n_days, n_hours = set(), 0, 0
         day = period.start
         while day <= period.end:
-            val = self.get_day_val(day)
-            n_days += 1 if val else 0
-            total += val
+            hours = self.get_day_val(day)
+            n_days += 1 if hours else 0
+            n_hours += hours
             years.add(day.year)
             day += timedelta(days=1)
 
-        return years, n_days, total
-
-
-    def format_cumulative_stats(self, period: Period, stats: tuple[int, float, int]) -> tuple:
-        """Format cumulative stats into pretty strings."""
-        # Unpack args
-        years, n_days, total = stats
-        n_years = len(years)
-
-        # Determine theoretic maxes and chains
-        n_weeks_curr = SMART_WOY if period.end.year == SMART_TODAY.year else 52
-        n_weeks_past = (n_years - 1) * 52
-        n_weeks = n_weeks_curr + n_weeks_past
-
-        n_days_max = n_weeks * len(self.weekmask)
-        n_days_max = n_days_max if n_days_max else n_days
-        val_max = n_days_max * self.standard.hi
-        chain = self.format_chain_stats()
-
-        # Put it all together
-        val_stat = Fore.BLACK + f'hour: {total:0.0f} ({total/val_max:.0%})'
-        day_stat = Fore.BLACK + f'days: {n_days} ({n_days / n_days_max:.0%})'
-        chain_stat = Fore.BLACK + f'chæn: {chain}'
-        year_stat = Fore.BLACK + f'year: {n_years}'
-        return val_stat, day_stat, chain_stat, year_stat
-
-
-    def format_chain_stats(self) -> str:
-        """Get current and max chain stats for the project."""
-        chain_curr = self.get_chain_current()
-        chain_max = self.get_chain_max()
-        if chain_curr == chain_max:
-            stats = f'{chain_curr}!'
-        else:
-            stats = f'{chain_curr}/{chain_max}'
+        chain = self.calc_chain(period)
+        stats = Stats(period, self.standard, self.weekmask, n_hours, n_days, chain, years)
         return stats
 
 
-    def get_chain_current(self) -> int:
-        """Get the chain of successful days starting from the current day."""
-        chain, day, oldest_day = 0, SMART_TODAY, get_oldest_entry(self.data)['date']
-        score = self.score_day(day)
-        while score >= SCORE_OKAY and day >= oldest_day:
-            day -= timedelta(days=1)
+    def calc_chain(self, period: Period) -> Chain:
+        """Get the chain of successful days recorded for the specified period."""
+        chain = chain_curr = chain_max = 0
+        day = period.end
+        while day >= period.start:
             score = self.score_day(day)
-            if score == SCORE_ZERO and f'{day:%a}' not in self.weekmask:
-                score = SCORE_OKAY
-                continue
-            chain += 1
-        return chain
-
-
-    def get_chain_max(self) -> int:
-        """Get the maximum chain of successful days ever recorded for the project."""
-        chain = chain_max = 0
-        day = get_oldest_entry(self.data)['date']
-        while day <= SMART_TODAY:
-            score = self.score_day(day)
-            if score == SCORE_ZERO and f'{day:%a}' not in self.weekmask:
-                day += timedelta(days=1)
+            is_zero = (score == SCORE_ZERO)
+            is_req = f'{day:%a}' in self.weekmask
+            if is_zero and is_req:
+                chain_curr = chain
+            elif is_zero and not is_req:
+                day -= timedelta(days=1)
                 continue
             elif score >= SCORE_OKAY:
                 chain += 1
             else:
                 chain_max = max(chain_max, chain)
                 chain = 0
-            day += timedelta(days=1)
-        chain_max = max(chain_max, chain)
-        return chain_max
+            day -= timedelta(days=1)
+        chain = Chain(chain_curr, chain_max)
+        return chain
 
 
     def track(self) -> None:
