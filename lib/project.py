@@ -7,9 +7,7 @@ import subprocess
 from colorama import Back, Style
 
 from cfg.config import *
-from lib.chain import Chain
-from lib.period import Period
-from lib.standard import Standard
+from lib.wrappers import Chain, Period, Standard
 from lib.stats import Stats
 from lib.utils import toast, underline
 

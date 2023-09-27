@@ -6,9 +6,7 @@ from dataclasses import dataclass
 from colorama import Fore
 
 from cfg.config import SMART_TODAY, SMART_WOY
-from lib.chain import Chain
-from lib.period import Period
-from lib.standard import Standard
+from lib.wrappers import Chain, Period, Standard
 
 
 @dataclass

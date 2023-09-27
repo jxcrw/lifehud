@@ -3,7 +3,7 @@
 
 from cfg.config import SMART_TODAY, WEEKMASK_ALL, WEEKMASK_ANY, WEEKMASK_SIX
 from lib.project import Project
-from lib.standard import Standard as Std
+from lib.wrappers import Standard as Std
 
 
 PROJECTS = [
