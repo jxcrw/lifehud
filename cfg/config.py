@@ -8,7 +8,7 @@ import sys
 
 from colorama import Fore
 
-from lib.wrappers import DataHandler as Dh
+from lib.wrappers import DataHandler as Dh, Score
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────
@@ -46,31 +46,11 @@ HANDLERS = {
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────
-# │ Project Scoring
-# └─────────────────────────────────────────────────────────────────────────────
-SCORE_GOOD = 1
-SCORE_OKAY = 0.5
-SCORE_BAD = 0.25
-SCORE_ZERO = 0
-
-WEEKMASK_ANY = set()
-WEEKMASK_ALL = {'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'}
-WEEKMASK_SIX = {'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'}
-
-
-# ┌─────────────────────────────────────────────────────────────────────────────
 # │ UI
 # └─────────────────────────────────────────────────────────────────────────────
 # TUI
 DOT_STD = '⯀'  # Alt: ●
 DOT_WIP = 'w'
-
-SCORE2FORE = {
-    SCORE_GOOD: Fore.GREEN,
-    SCORE_OKAY: Fore.YELLOW,
-    SCORE_BAD: Fore.RED,
-    SCORE_ZERO: Fore.LIGHTBLACK_EX,
-}
 
 # Toasts
 FONT = 'Consolas'
@@ -82,12 +62,18 @@ HEX_GREEN = '9ece6a'
 HEX_YELLOW = 'f7b273'
 HEX_RED = 'f7768e'
 
-SCORE2HEX = {
-    SCORE_GOOD: HEX_GREEN,
-    SCORE_OKAY: HEX_YELLOW,
-    SCORE_BAD: HEX_RED,
-    SCORE_ZERO: HEX_RED,
-}
+
+# ┌─────────────────────────────────────────────────────────────────────────────
+# │ Project Scoring
+# └─────────────────────────────────────────────────────────────────────────────
+SCORE_GOOD = Score(1, Fore.GREEN, HEX_GREEN)
+SCORE_OKAY = Score(0.5, Fore.YELLOW, HEX_YELLOW)
+SCORE_BAD = Score(0.25, Fore.RED, HEX_RED)
+SCORE_ZERO = Score(0, Fore.LIGHTBLACK_EX, HEX_FG)
+
+WEEKMASK_ANY = set()
+WEEKMASK_ALL = {'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'}
+WEEKMASK_SIX = {'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'}
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────

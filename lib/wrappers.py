@@ -6,6 +6,7 @@ from datetime import date
 from typing import Callable
 
 import click
+from colorama import Fore
 
 
 @dataclass
@@ -27,6 +28,20 @@ class Standard:
     """A lo-hi standard."""
     lo: float
     hi: float
+
+
+@dataclass
+class Score:
+    """A contribution score and its styling."""
+    val: float
+    fore: Fore
+    hex_color: str
+
+    def __gt__(self, other) -> bool:
+        return self.val > other.val
+
+    def __ge__(self, other) -> bool:
+        return self.val >= other.val
 
 
 @dataclass

@@ -10,7 +10,7 @@ from cfg.config import *
 from cfg.today import SMART_TODAY, SMART_TODAY_OWNER
 from lib.stats import Stats
 from lib.utils import autoopen, toast, underline
-from lib.wrappers import Chain, Period, Standard
+from lib.wrappers import Period, Standard
 
 
 class Project:
@@ -116,12 +116,12 @@ class Project:
                 dot = underline(dot)
             if score == SCORE_ZERO and is_req_day:
                 dot = Back.BLACK + dot
-        fore = SCORE2FORE[score]
+        fore = score.fore
         dot = fore + dot + Style.RESET_ALL
         return dot
 
 
-    def score_day(self, day: date) -> float:
+    def score_day(self, day: date) -> Score:
         """Determine the contribution score for a day based on project's standards."""
         val, std = self.get_contribution_val(day), self.standard
         if val >= std.hi:
@@ -152,7 +152,7 @@ class Project:
 
     def track(self) -> None:
         """Start/stop time tracking for the project."""
-        data, now = self.data, datetime.now()
+        now = datetime.now()
         newest = self.get_newest_entry()
         is_new = newest[METRIC] != WIP_VAL
         if is_new:
@@ -163,16 +163,15 @@ class Project:
             vals = [date, hours, start, end]
             keys = self.get_headers()
             entry = {keys[i]: vals[i] for i in range(len(vals))}
-            data[date].insert(0, entry)
+            self.data[date].insert(0, entry)
             toast(self.name, HEX_FG)
         else:
             start = datetime.combine(newest['date'], newest['start'])
             hours = (now - start).seconds / 3600
             newest[METRIC] = hours
             newest['end'] = now
-            score = self.score_day(newest['date'])
-            color = SCORE2HEX[score]
-            toast(f'{self.name} ({hours:0.2f}h)', color)
+            hex_color = self.score_day(newest['date']).hex_color
+            toast(f'{self.name} ({FMTR_FLOAT(hours)}h)', hex_color)
 
         self.write_data()
         if self.autoopen and not is_new:
