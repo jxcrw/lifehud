@@ -20,7 +20,6 @@ def toast(message: str, hex_color: str) -> None:
     script = f'''
         SplashImage,, B1 FS{FONT_SIZE} CW{HEX_BG} CT{hex_color}, {message},,, {FONT}
         Sleep, {DURATION_MS}
-        SplashImage
         SplashImage, Off
     '''
     ahk.run_script(script)

@@ -31,7 +31,7 @@ METRIC = 'hours'
 WIP_VAL = -1
 WIP_TIME = time(hour=0, minute=0)
 
-FMTR_TIME = lambda x: x.isoformat('minutes')
+FMTR_TIME = lambda x: format(x, '%H:%M')
 FMTR_FLOAT = lambda x: format(x, '0.2f')
 
 HANDLERS = {
@@ -61,6 +61,9 @@ HEX_BG = '1a1b26'
 HEX_GREEN = '9ece6a'
 HEX_YELLOW = 'f7b273'
 HEX_RED = 'f7768e'
+HEX_CMT = '565f89'
+ICON_PLAY = '▶'
+ICON_STOP = '◼'
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────
@@ -69,7 +72,7 @@ HEX_RED = 'f7768e'
 SCORE_GOOD = Score(1, Fore.GREEN, HEX_GREEN)
 SCORE_OKAY = Score(0.5, Fore.YELLOW, HEX_YELLOW)
 SCORE_BAD = Score(0.25, Fore.RED, HEX_RED)
-SCORE_ZERO = Score(0, Fore.LIGHTBLACK_EX, HEX_FG)
+SCORE_ZERO = Score(0, Fore.LIGHTBLACK_EX, HEX_CMT)
 
 WEEKMASK_ANY = set()
 WEEKMASK_ALL = {'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'}

@@ -145,37 +145,45 @@ class Project:
                 val += e[METRIC]
             else:
                 start = datetime.combine(day, e['start'])
-                now = datetime.now()
-                val += (now - start).seconds / 3600
+                now = datetime.combine(SMART_TODAY, datetime.now().time())
+                is_wip_valid = now > start
+                if is_wip_valid:
+                    val += (now - start).seconds / 3600
         return val
 
 
     def track(self) -> None:
         """Start/stop time tracking for the project."""
-        now = datetime.now()
+        # Update project data
+        now, day = datetime.now(), SMART_TODAY
         newest = self.get_newest_entry()
         is_new = newest[METRIC] != WIP_VAL
         if is_new:
-            date, hours, end = SMART_TODAY, WIP_VAL, WIP_TIME
+            hours, end = WIP_VAL, WIP_TIME
             if self.name == SMART_TODAY_OWNER:
-                date += timedelta(days=1)
+                day += timedelta(days=1)
             start = now + timedelta(minutes=self.delayed_start)
-            vals = [date, hours, start, end]
+            vals = [day, hours, start.time(), end]
             keys = self.get_headers()
             entry = {keys[i]: vals[i] for i in range(len(vals))}
-            self.data[date].insert(0, entry)
-            toast(self.name, HEX_FG)
+            self.data[day].insert(0, entry)
         else:
             start = datetime.combine(newest['date'], newest['start'])
             hours = (now - start).seconds / 3600
             newest[METRIC] = hours
             newest['end'] = now
-            hex_color = self.score_day(newest['date']).hex_color
-            toast(f'{self.name} ({FMTR_FLOAT(hours)}h)', hex_color)
 
+        # Issue toast
+        val = self.get_contribution_val(day)
+        icon = ICON_PLAY if is_new else ICON_STOP
+        message = f'{icon} {self.name} - {FMTR_FLOAT(val)}h'
+        hex_color = self.score_day(day).hex_color
+        toast(message, hex_color)
+
+        # Write data to disk
         self.write_data()
         if self.autoopen and not is_new:
-            autoopen()
+            autoopen(self.path)
 
 
     def read_data(self) -> dict:
