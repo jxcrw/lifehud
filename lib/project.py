@@ -43,11 +43,10 @@ class Project:
             dot = self.build_dot(day)
             dots.append(dot)
         if show_stats:
-            saturday = day
-            period = Period(sunday, saturday)
+            period = Period(sunday, SMART_TODAY)
             stats = Stats(self, period)
             dots[-1] += stats.format_weekly()
-        graph = Fore.WHITE + f'{self.name} {" ".join(dots)}'
+        graph = FORE_FG + f'{self.name} {" ".join(dots)}'
         return graph
 
 
@@ -93,7 +92,7 @@ class Project:
 
         # Put everything together
         year_label = f'-{year}' if show_year else ''
-        graph = Fore.WHITE + f'{self.name}{year_label}\n{dots}'
+        graph = FORE_FG + f'{self.name}{year_label}\n{dots}'
         return graph
 
 

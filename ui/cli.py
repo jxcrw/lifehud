@@ -4,8 +4,8 @@
 from datetime import date, timedelta
 
 import click
-from colorama import Fore
 
+from cfg.config import FORE_INFO
 from cfg.projdefs import PROJECTS, PROJECTS_DAILY_ORDER
 from lib.wrappers import ClickGroupInlineOrder
 
@@ -32,7 +32,7 @@ def week(num, stats, optl, daily_order):
     for i in range(num):
         day = date.today() - timedelta(days=i*7)
         graphs = '\n'.join([p.render_week(day, show_stats=stats) for p in projs.values()])
-        weekhud = f'{Fore.BLACK}Week {day:%U}\n{graphs}'
+        weekhud = f'{FORE_INFO}Week {day:%U}\n{graphs}'
         weekhuds.append(weekhud)
     print('\n\n'.join(weekhuds))
 

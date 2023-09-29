@@ -18,8 +18,8 @@ class Period:
 
 @dataclass
 class Chain:
-    """A curr-max chain."""
-    curr: float
+    """An active-max chain."""
+    active: float
     max: float
 
 
