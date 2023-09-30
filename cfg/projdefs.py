@@ -6,6 +6,7 @@ from lib.project import Project
 from lib.wrappers import Standard as Std
 
 
+# Project definitions, in order by life importance
 PROJECTS = [
     Project('mind', Std(6.9, 7.9), 25, False, WEEKMASK_ALL),
     Project('body', Std(0.9, 1.5), 20, True, WEEKMASK_SIX),
@@ -16,5 +17,7 @@ PROJECTS = [
 ]
 PROJECTS = {p.name: p for p in PROJECTS}
 
+
+# Project definitions, in order by sequence of daily completion
 PROJECTS_DAILY_ORDER = ['mind', 'lang', 'work', 'pool', 'body', 'meet']
 PROJECTS_DAILY_ORDER = {name: PROJECTS[name] for name in PROJECTS_DAILY_ORDER}

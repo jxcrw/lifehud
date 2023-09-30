@@ -20,12 +20,12 @@ def cli():
 @click.option('--num', '-n', default=1, help="How many weeks to render (starting from current week).")
 @click.option('--stats', '-s', is_flag=True, default=False, help="Show cumulative stats.")
 @click.option('--optl', '-o', is_flag=True, default=False, help="Show optional projects.")
-@click.option('--daily_order', '-d', is_flag=True, default=False, help="Show projects in daily order.")
-def week(num, stats, optl, daily_order):
+@click.option('--life_order', '-l', is_flag=True, default=False, help="Show projects in life order.")
+def week(num, stats, optl, life_order):
     """Render a weekly lifehud."""
-    weekhuds, projs = [], PROJECTS
-    if daily_order:
-        projs = PROJECTS_DAILY_ORDER
+    weekhuds, projs = [], PROJECTS_DAILY_ORDER
+    if life_order:
+        projs = PROJECTS
     if not optl:
         projs = {k: p for k, p in projs.items() if p.required}
 
