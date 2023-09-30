@@ -64,13 +64,13 @@ class Stats:
         day = period.end
         while day >= period.start:
             score = self.project.score_day(day)
-            is_ok = score >= SCORE_OKAY
-            is_req = f'{day:%w}' in self.project.weekmask
+            is_score_ok = score >= SCORE_OKAY
+            is_req_day = self.project.is_req_day(day)
 
-            if not is_ok and not is_req:
+            if not is_score_ok and not is_req_day:
                 day -= timedelta(days=1)
                 continue
-            elif is_ok:
+            elif is_score_ok:
                 chain_temp += 1
                 chain_max = max(chain_max, chain_temp)
                 if is_active:

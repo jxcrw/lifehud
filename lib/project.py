@@ -107,7 +107,7 @@ class Project:
     def build_dot(self, day: date) -> str:
         """Build a pretty contribution dot for the specified day."""
         dot, score = DOT_STD, self.score_day(day)
-        is_req_day = f'{day:%a}' in self.weekmask
+        is_req_day = self.is_req_day(day)
         if day == SMART_TODAY:
             if self.is_wip():
                 dot = DOT_WIP
@@ -149,6 +149,12 @@ class Project:
                 if is_wip_valid:
                     val += (now - start).seconds / 3600
         return val
+
+
+    def is_req_day(self, day: date) -> bool:
+        """Determine whether the specified day is a required day for the project."""
+        is_req = f'{day:%w}' in self.weekmask
+        return is_req
 
 
     def track(self) -> None:
