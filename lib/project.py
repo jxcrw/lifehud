@@ -200,10 +200,10 @@ class Project:
 
     def write_data(self) -> None:
         """Write project data to disk with sensible string formatting."""
-        data = dict(sorted(self.data.items(), reverse=True))
+        self.data = dict(sorted(self.data.items(), reverse=True))
         buffer = [self.get_headers()]
-        for day in data:
-            for entry in data[day]:
+        for day in self.data:
+            for entry in self.data[day]:
                 vals = [HANDLERS[key].formatter(entry[key]) for key in entry]
                 buffer.append(vals)
         with open(self.path, 'w+', newline='\n', encoding='utf-8') as f:
