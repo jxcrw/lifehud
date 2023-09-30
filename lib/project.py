@@ -210,10 +210,22 @@ class Project:
             f.write('\n'.join(['\t'.join(_) for _ in buffer]))
 
 
+    def get_headers(self) -> list[str]:
+        """Get a list of the headers to label a project data entry."""
+        headers = list(self.get_oldest_entry().keys())
+        return headers
+
+
     def is_wip(self) -> bool:
         """Get whether the project currently has a WIP entry."""
         newest_val = self.get_newest_entry()[METRIC]
         return newest_val == WIP_VAL
+
+
+    def get_period_all(self) -> Period:
+        """Get a period from the oldest entry through smart today."""
+        period = Period(self.get_oldest_entry()['date'], SMART_TODAY)
+        return period
 
 
     def get_newest_entry(self) -> dict:
@@ -226,16 +238,3 @@ class Project:
         """Get the oldest entry in a project dataset."""
         oldest = list(self.data.values())[-1][0]
         return oldest
-
-
-    def get_headers(self) -> list[str]:
-        """Get a list of the headers to label a project data entry."""
-        headers = list(self.get_oldest_entry().keys())
-        return headers
-
-
-    def get_period_all(self) -> Period:
-        """Get a period from the oldest entry through smart today."""
-        period = Period(self.get_oldest_entry()['date'], SMART_TODAY)
-        return period
-
