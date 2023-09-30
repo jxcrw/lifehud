@@ -3,7 +3,7 @@
 
 from datetime import timedelta
 
-from cfg.config import FMT_NUM, FMT_PCT, FORE_INFO, SCORE_OKAY, SCORE_ZERO
+from cfg.config import FMT_NUM, FMT_PCT, FORE_INFO, SCORE_OKAY
 from cfg.today import SMART_TODAY, SMART_WOY
 from lib.wrappers import Chain, Period
 
@@ -14,16 +14,20 @@ class Stats:
         self.project = project
         self.period = period
 
+        # Totals
         self.years = set()
-        self.chain = None
-        self.n_hours = 0
         self.n_days = 0
+        self.n_hours = 0
+        self.calc_totals()
+
+        # Theoretic maxes
         self.n_hours_max = 0
         self.n_days_max = 0
+        self.calc_theoretic_maxes()
 
-        self.calc_totals()
-        self.calc_chain()
-        self.calc_maxes()
+        # Chains
+        self.chain = self.calc_chain(period)
+        self.chain_all = self.calc_chain(project.get_period_all())
 
 
     def calc_totals(self) -> None:
@@ -37,13 +41,28 @@ class Stats:
             day += timedelta(days=1)
 
 
-    def calc_chain(self) -> Chain:
-        """Calculate the current/max chain of successful days recorded for the stats period."""
-        chain_temp = chain_active = chain_max = 0
-        is_active = True
+    def calc_theoretic_maxes(self):
+        """Calculate the theoretic max contributions for the stats period."""
+        n_years = len(self.years)
+        n_weeks_curr = SMART_WOY if self.period.end.year == SMART_TODAY.year else 52
+        n_weeks_past = (n_years - 1) * 52
+        n_weeks = n_weeks_curr + n_weeks_past
 
-        day = self.period.end
-        while day >= self.period.start:
+        n_days_max = n_weeks * len(self.project.weekmask)
+        n_days_max = n_days_max if n_days_max else self.n_days
+        n_hours_max = n_days_max * self.project.standard.hi
+
+        self.n_days_max = n_days_max
+        self.n_hours_max = n_hours_max
+
+
+    def calc_chain(self, period: Period) -> Chain:
+        """Calculate the current/max chain of successful days recorded for the stats period."""
+        chain_temp = chain_max = 0
+        chain_active, is_active = 0, True
+
+        day = period.end
+        while day >= period.start:
             score = self.project.score_day(day)
             is_ok = score >= SCORE_OKAY
             is_req = f'{day:%w}' in self.project.weekmask
@@ -61,50 +80,36 @@ class Stats:
                 is_active = False
             day -= timedelta(days=1)
 
-        self.chain = Chain(chain_active, chain_max)
-
-
-    def calc_maxes(self):
-        """Calculate the theoretic max contributions for the stats period."""
-        n_years = len(self.years)
-        n_weeks_curr = SMART_WOY if self.period.end.year == SMART_TODAY.year else 52
-        n_weeks_past = (n_years - 1) * 52
-        n_weeks = n_weeks_curr + n_weeks_past
-
-        n_days_max = n_weeks * len(self.project.weekmask)
-        n_days_max = n_days_max if n_days_max else self.n_days
-        n_hours_max = n_days_max * self.project.standard.hi
-
-        self.n_days_max = n_days_max
-        self.n_hours_max = n_hours_max
+        chain = Chain(chain_active, chain_max)
+        return chain
 
 
     def format_cumulatively(self) -> tuple[str]:
         """Format stats for cumulative display."""
         hours = FORE_INFO + f'hour: {self.n_hours:{FMT_NUM}} ({self.n_hours / self.n_hours_max:{FMT_PCT}})'
         days = FORE_INFO + f'days: {self.n_days} ({self.n_days / self.n_days_max:{FMT_PCT}})'
-        chain = FORE_INFO + f'chæn: {self.format_chain()}'
+        chain = FORE_INFO + f'chæn: {self.format_chain(self.chain)}'
         years = FORE_INFO + f'year: {len(self.years)}'
         return hours, days, chain, years
 
 
     def format_yearly(self) -> None:
         """Format stats for yearly display."""
-        hours, days, _, _ = self.format_cumulatively()
-        stats = '   '.join([hours, days])
+        hours, days, chain, _ = self.format_cumulatively()
+        stats = '   '.join([hours, days, chain])
         return stats
 
 
     def format_weekly(self) -> None:
         """Format stats for weekly display."""
-        stats = FORE_INFO + f'  {self.n_hours:{FMT_NUM}}h  ({self.format_chain()})'
+        stats = FORE_INFO + f'  {self.n_hours:{FMT_NUM}}h  ({self.format_chain(self.chain_all)})'
         return stats
 
 
-    def format_chain(self) -> str:
+    def format_chain(self, chain: Chain) -> str:
         """Format chain stats."""
-        if self.chain.active == self.chain.max:
-            chain = f'{self.chain.active}!'
+        if chain.active == chain.max:
+            chain = f'{chain.active}!'
         else:
-            chain = f'{self.chain.active}/{self.chain.max}'
+            chain = f'{chain.active}/{chain.max}'
         return chain

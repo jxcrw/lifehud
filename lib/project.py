@@ -232,3 +232,10 @@ class Project:
         """Get a list of the headers to label a project data entry."""
         headers = list(self.get_oldest_entry().keys())
         return headers
+
+
+    def get_period_all(self) -> Period:
+        """Get a period from the oldest entry through smart today."""
+        period = Period(self.get_oldest_entry()['date'], SMART_TODAY)
+        return period
+
