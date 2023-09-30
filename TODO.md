@@ -1,5 +1,4 @@
 # TODO
-- `2023-09-27` Make local copy of server data for backup purposes.
 - `2023-09-18` Write documentation.
 - `2023-04-18` Add feature for visually splitting year into quarters. 
 

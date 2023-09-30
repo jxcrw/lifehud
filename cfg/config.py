@@ -16,10 +16,11 @@ from lib.wrappers import DataHandler as Dh, Score
 # └─────────────────────────────────────────────────────────────────────────────
 DIR_HOME = Path.home()
 DIR_ROOT = Path(sys.path[1])
-DIR_DATA = DIR_ROOT / '_arc/data'
 DIR_SYNC = DIR_HOME / 'Dropbox/lifehud'
 DIR_SCOOP = Path(os.getenv('SCOOP'))
-DIR_DATA = DIR_SYNC  # TODO
+DIR_ARCHIVE = DIR_ROOT / '_arc/data'
+
+ENABLE_ARCHIVING = True
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────
