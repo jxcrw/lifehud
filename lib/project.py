@@ -182,8 +182,8 @@ class Project:
         val = self.get_contribution_val(day)
         icon = ICON_PLAY if is_new else ICON_STOP
         message = f'{icon} {self.name} - {FMTR_FLOAT(val)}h'
-        hex_color = self.score_day(day).hex_color
-        toast(message, hex_color)
+        color_hex = self.score_day(day).color_hex
+        toast(message, color_hex)
 
         # Write data to disk
         self.write_data()

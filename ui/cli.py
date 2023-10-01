@@ -7,6 +7,7 @@ import click
 
 from cfg.config import FORE_INFO
 from cfg.projdefs import PROJECTS, PROJECTS_DAILY_ORDER
+from cfg.today import SMART_TODAY
 from lib.wrappers import ClickGroupInlineOrder
 
 
@@ -30,7 +31,7 @@ def week(num, stats, optl, life_order):
         projs = {k: p for k, p in projs.items() if p.required}
 
     for i in range(num):
-        day = date.today() - timedelta(days=i*7)
+        day = SMART_TODAY - timedelta(days=i*7)
         graphs = '\n'.join([p.render_week(day, show_stats=stats) for p in projs.values()])
         weekhud = f'{FORE_INFO}Week {day:%U}\n{graphs}'
         weekhuds.append(weekhud)
@@ -41,7 +42,7 @@ def week(num, stats, optl, life_order):
 @click.option('--stats', '-s', is_flag=True, default=False, help="Show cumulative stats.")
 def year(stats):
     """Render a yearly lifehud."""
-    year = date.today().year
+    year = SMART_TODAY.year
     graphs = [p.render_year(year, show_stats=stats) for p in PROJECTS.values()]
     yearhud = '\n\n'.join(graphs)
     print(yearhud)
@@ -51,7 +52,7 @@ def year(stats):
 @click.argument('name', nargs=1)
 @click.option('--stats', '-s', is_flag=True, default=False, help="Show cumulative stats.")
 def project(name, stats):
-    """Render all data for the specified project (by year)."""
+    """Render all data for the specified project."""
     p = PROJECTS[name]
     projhud = p.render_project(show_stats=stats)
     print(projhud)

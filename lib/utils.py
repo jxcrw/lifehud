@@ -14,11 +14,11 @@ def underline(string: str) -> str:
     return string
 
 
-def toast(message: str, hex_color: str) -> None:
+def toast(message: str, color_hex: str) -> None:
     """Display a toast message."""
     ahk = AHK()
     script = f'''
-        SplashImage,, B1 FS{FONT_SIZE} CW{HEX_BG} CT{hex_color}, {message},,, {FONT}
+        SplashImage,, B1 FS{FONT_SIZE} CW{HEX_BG} CT{color_hex}, {message},,, {FONT}
         Sleep, {DURATION_MS}
         SplashImage, Off
     '''

@@ -84,7 +84,7 @@ SCORE_BAD = Score(0.25, FORE_BAD, HEX_RED)
 SCORE_ZERO = Score(0, FORE_ZERO, HEX_FG)
 
 WEEKMASK_ANY = set()
-WEEKMASK_ALL = {'0', '1', '2', '3', '4', '5', '6'}  # 0 is Sunday 6 is Saturday
+WEEKMASK_ALL = {'0', '1', '2', '3', '4', '5', '6'}  # Where 0 is Sunday, 6 is Saturday
 WEEKMASK_SIX = {'0', '1', '2', '3', '4', '5'}
 
 

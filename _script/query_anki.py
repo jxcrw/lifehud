@@ -6,13 +6,13 @@ from pathlib import Path
 import shutil
 import sqlite3
 
-from cfg.config import DIR_DATA, DIR_SCOOP, DIR_SYNC, FMTR_FLOAT
+from cfg.config import DIR_ARCHIVE, DIR_SCOOP, DIR_SYNC, FMTR_FLOAT
 
 
 # Setup
 FILE = DIR_SYNC / 'lang.tsv'
 FILE_ORIG = DIR_SCOOP / 'persist/anki/data/Jak/collection.anki2'
-FILE_WORK = Path(DIR_DATA / 'collection.anki2')
+FILE_WORK = Path(DIR_ARCHIVE / 'collection.anki2')
 shutil.copy(FILE_ORIG, FILE_WORK)
 
 

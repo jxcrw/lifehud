@@ -35,7 +35,7 @@ class Score:
     """A contribution score and its styling."""
     val: float
     fore: Fore
-    hex_color: str
+    color_hex: str
 
     def __gt__(self, other) -> bool:
         return self.val > other.val
