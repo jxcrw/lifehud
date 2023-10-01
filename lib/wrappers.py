@@ -45,6 +45,14 @@ class Score:
 
 
 @dataclass
+class RenderOpts:
+    """Common rendering options."""
+    show_year: bool = False
+    show_stats: bool = False
+    split_quarters: bool = False
+
+
+@dataclass
 class DataHandler:
     """A handler for str → obj conversion and obj → str formatting."""
     converter: Callable

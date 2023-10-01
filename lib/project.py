@@ -10,7 +10,7 @@ from cfg.config import *
 from cfg.today import SMART_TODAY, SMART_TODAY_OWNER
 from lib.stats import Stats
 from lib.utils import autoopen, toast, underline
-from lib.wrappers import Period, Standard
+from lib.wrappers import Period, RenderOpts, Standard
 
 
 class Project:
@@ -33,7 +33,7 @@ class Project:
         self.data = self.read_data()
 
 
-    def render_week(self, day: date, show_stats: bool = False) -> str:
+    def render_week(self, day: date, opts: RenderOpts) -> str:
         """Render contribution graph for the week containing the specified day."""
         dots = []
         days_since_sunday = (day.weekday() + 1) % 7
@@ -42,7 +42,7 @@ class Project:
             day = sunday + timedelta(days=i)
             dot = self.build_dot(day)
             dots.append(dot)
-        if show_stats:
+        if opts.show_stats:
             period = Period(sunday, SMART_TODAY)
             stats = Stats(self, period)
             dots[-1] += stats.format_weekly()
@@ -50,8 +50,7 @@ class Project:
         return graph
 
 
-    def render_year(self, year: int, show_stats: bool = False, show_year: bool = False,
-                    split_quarters: bool = False) -> str:
+    def render_year(self, year: int, opts: RenderOpts) -> str:
         """Render contribution graph for the specified year."""
         # Build dict(weeknum → dict(daynum → date))
         soy = date(year, 1, 1)
@@ -62,7 +61,7 @@ class Project:
             daynum = int(day.strftime('%w'))
             weeknums[weeknum][daynum] = day
 
-            if split_quarters:
+            if opts.split_quarters:
                 is_eoq = weeknum in {13, 26, 39}
                 if is_eoq:
                     weeknums[str(weeknum)] = {}
@@ -80,7 +79,7 @@ class Project:
 
         # Regroup dots by day of week + add stats
         dots_by_dow = [list(_) for _ in zip(*dots_by_week)]
-        if show_stats:
+        if opts.show_stats:
             end = SMART_TODAY if year == SMART_TODAY.year else eoy
 
             # Stats for current year
@@ -98,15 +97,15 @@ class Project:
         dots = '\n'.join([' '.join(_) for _ in dots_by_dow])
 
         # Put everything together
-        year_label = f'-{year}' if show_year else ''
+        year_label = f'-{year}' if opts.show_year else ''
         graph = FORE_FG + f'{self.name}{year_label}\n{dots}'
         return graph
 
 
-    def render_project(self, show_stats: bool = False, split_quarters: bool = False) -> str:
+    def render_project(self, opts: RenderOpts) -> str:
         """Render all project data as yearly contribution graphs."""
         years = sorted(set([date.year for date in self.data.keys()]), reverse=True)
-        graphs = [self.render_year(year, show_stats=show_stats, show_year=True, split_quarters=split_quarters) for year in years]
+        graphs = [self.render_year(year, opts) for year in years]
         projhud = '\n\n'.join(graphs)
         return projhud
 
