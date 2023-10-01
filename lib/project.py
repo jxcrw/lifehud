@@ -50,7 +50,8 @@ class Project:
         return graph
 
 
-    def render_year(self, year: int, show_stats: bool = False, show_year: bool = False) -> str:
+    def render_year(self, year: int, show_stats: bool = False, show_year: bool = False,
+                    split_quarters: bool = False) -> str:
         """Render contribution graph for the specified year."""
         # Build dict(weeknum → dict(daynum → date))
         soy = date(year, 1, 1)
@@ -60,6 +61,12 @@ class Project:
             weeknum = int(day.strftime('%U'))
             daynum = int(day.strftime('%w'))
             weeknums[weeknum][daynum] = day
+
+            if split_quarters:
+                is_eoq = weeknum in {13, 26, 39}
+                if is_eoq:
+                    weeknums[str(weeknum)] = {}
+
             day += timedelta(days=1)
 
         # Build info for each day of each week
@@ -96,10 +103,10 @@ class Project:
         return graph
 
 
-    def render_project(self, show_stats: bool = False) -> str:
+    def render_project(self, show_stats: bool = False, split_quarters: bool = False) -> str:
         """Render all project data as yearly contribution graphs."""
         years = sorted(set([date.year for date in self.data.keys()]), reverse=True)
-        graphs = [self.render_year(year, show_stats=show_stats, show_year=True) for year in years]
+        graphs = [self.render_year(year, show_stats=show_stats, show_year=True, split_quarters=split_quarters) for year in years]
         projhud = '\n\n'.join(graphs)
         return projhud
 

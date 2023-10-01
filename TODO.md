@@ -1,7 +1,6 @@
 # TODO
 - `2023-10-01` Write tests.
 - `2023-09-18` Write documentation.
-- `2023-04-18` Add feature for visually splitting year into quarters. 
 
 
 

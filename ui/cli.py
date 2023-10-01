@@ -40,10 +40,11 @@ def week(num, stats, optl, life_order):
 
 @cli.command()
 @click.option('--stats', '-s', is_flag=True, default=False, help="Show cumulative stats.")
-def year(stats):
+@click.option('--quarters', '-q', is_flag=True, default=False, help="Split year into quarters.")
+def year(stats, quarters):
     """Render a yearly lifehud."""
     year = SMART_TODAY.year
-    graphs = [p.render_year(year, show_stats=stats) for p in PROJECTS.values()]
+    graphs = [p.render_year(year, show_stats=stats, split_quarters=quarters) for p in PROJECTS.values()]
     yearhud = '\n\n'.join(graphs)
     print(yearhud)
 
@@ -51,10 +52,11 @@ def year(stats):
 @cli.command()
 @click.argument('name', nargs=1)
 @click.option('--stats', '-s', is_flag=True, default=False, help="Show cumulative stats.")
-def project(name, stats):
+@click.option('--quarters', '-q', is_flag=True, default=False, help="Split year into quarters.")
+def project(name, stats, quarters):
     """Render all data for the specified project."""
     p = PROJECTS[name]
-    projhud = p.render_project(show_stats=stats)
+    projhud = p.render_project(show_stats=stats, split_quarters=quarters)
     print(projhud)
 
 
