@@ -150,10 +150,8 @@ class Project:
                 val += e[METRIC]
             else:
                 start = datetime.combine(day, e['start'])
-                now = datetime.combine(SMART_TODAY, datetime.now().time())
-                is_wip_valid = now > start
-                if is_wip_valid:
-                    val += (now - start).seconds / 3600
+                now = datetime.now()
+                val += (now - start).seconds / 3600
         return val
 
 
