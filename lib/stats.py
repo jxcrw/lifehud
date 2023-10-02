@@ -34,9 +34,9 @@ class Stats:
         """Calculate contribution totals for the stats period."""
         day = self.period.start
         while day <= self.period.end:
-            val = self.project.get_contribution_val(day)
-            self.n_days += 1 if val else 0
-            self.n_hours += val
+            cval = self.project.get_cval(day)
+            self.n_days += 1 if cval else 0
+            self.n_hours += cval
             self.years.add(day.year)
             day += timedelta(days=1)
 

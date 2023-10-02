@@ -128,31 +128,31 @@ class Project:
 
     def score_day(self, day: date) -> Score:
         """Determine the contribution score for a day based on project's standards."""
-        val, std = self.get_contribution_val(day), self.standard
-        if val >= std.hi:
+        cval, std = self.get_cval(day), self.standard
+        if cval >= std.hi:
             score = SCORE_GOOD
-        elif val >= std.lo:
+        elif cval >= std.lo:
             score = SCORE_OKAY
-        elif val > 0:
+        elif cval > 0:
             score = SCORE_BAD
         else:
             score = SCORE_ZERO
         return score
 
 
-    def get_contribution_val(self, day: date) -> float | str:
+    def get_cval(self, day: date) -> float | str:
         """Get a cumulative, WIP-aware contribution value for the specified day."""
-        val = 0
+        cval = 0
         entries = self.data[day] if day in self.data else []
         for e in entries:
             is_done = e[METRIC] != WIP_VAL
             if is_done:
-                val += e[METRIC]
+                cval += e[METRIC]
             else:
                 start = datetime.combine(day, e['start'])
                 now = datetime.now()
-                val += (now - start).seconds / 3600
-        return val
+                cval += (now - start).seconds / 3600
+        return cval
 
 
     def is_req_day(self, day: date) -> bool:
@@ -183,9 +183,9 @@ class Project:
             newest['end'] = now
 
         # Issue toast
-        val = self.get_contribution_val(day)
+        cval = self.get_cval(day)
         icon = ICON_PLAY if is_new else ICON_STOP
-        message = f'{icon} {self.name} - {FMTR_FLOAT(val)}h'
+        message = f'{icon} {self.name} - {FMTR_FLOAT(cval)}h'
         color_hex = self.score_day(day).color_hex
         toast(message, color_hex)
 

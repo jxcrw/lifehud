@@ -33,15 +33,15 @@ class Standard:
 @dataclass
 class Score:
     """A contribution score and its styling."""
-    val: float
+    cval: float
     fore: Fore
     color_hex: str
 
     def __gt__(self, other) -> bool:
-        return self.val > other.val
+        return self.cval > other.cval
 
     def __ge__(self, other) -> bool:
-        return self.val >= other.val
+        return self.cval >= other.cval
 
 
 @dataclass
