@@ -15,7 +15,7 @@ from lib.wrappers import DataHandler as Dh, Score
 # │ Pathing
 # └─────────────────────────────────────────────────────────────────────────────
 DIR_HOME = Path.home()
-DIR_ROOT = Path(sys.path[1])
+DIR_ROOT = DIR_HOME / 'dev/lifehud'
 DIR_SYNC = DIR_HOME / 'Dropbox/lifehud'
 DIR_SCOOP = Path(os.getenv('SCOOP'))
 DIR_ARCHIVE = DIR_ROOT / '_arc/data'
