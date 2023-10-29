@@ -1,5 +1,5 @@
 # LifeHUD
-Visualize progress on life projects in the form of contribution graphs.
+Visualize life projects in the form of contribution graphs. 😎
 
 <img src="./_img/lifehud_main.png" align="center">
 

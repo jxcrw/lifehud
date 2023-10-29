@@ -13,7 +13,7 @@ from lib.wrappers import ClickGroupInlineOrder, RenderOpts
 
 @click.group(cls=ClickGroupInlineOrder)
 def cli():
-    """Visualize progress on life projects in the form of contribution graphs."""
+    """Visualize life projects in the form of contribution graphs. 😎"""
     pass
 
 
